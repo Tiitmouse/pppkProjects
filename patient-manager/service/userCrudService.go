@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/xrash/smetrics"
 
@@ -23,7 +22,6 @@ type IUserCrudService interface {
 	Update(uuid uuid.UUID, user *model.User) (*model.User, error)
 	Delete(uuid uuid.UUID) error
 	GetAllUsers() ([]model.User, error)
-	GetAllPoliceOfficers() ([]model.User, error)
 	SearchUsersByName(query string) ([]model.User, error)
 	GetUserByOIB(oib string) (*model.User, error)
 }
@@ -75,9 +73,6 @@ func (u *UserCrudService) Delete(_uuid uuid.UUID) error {
 
 	user.FirstName = "Deleted"
 	user.LastName = "User"
-	user.OIB = fmt.Sprintf("000000%05d", user.ID)
-	user.BirthDate = time.Time{}
-	user.Residence = "Anonymized"
 	user.Email = fmt.Sprintf("deleted_%s@example.com", _uuid.String())
 	user.PasswordHash = ""
 
@@ -146,18 +141,6 @@ func (u *UserCrudService) GetAllUsers() ([]model.User, error) {
 	var users []model.User
 	rez := u.db.
 		Where("role != ?", model.RoleSuperAdmin).
-		Find(&users)
-	if rez.Error != nil {
-		return nil, rez.Error
-	}
-	return users, nil
-}
-
-// Gets all police officers users
-func (u *UserCrudService) GetAllPoliceOfficers() ([]model.User, error) {
-	var users []model.User
-	rez := u.db.
-		Where("role = ?", model.RolePolicija).
 		Find(&users)
 	if rez.Error != nil {
 		return nil, rez.Error

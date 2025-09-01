@@ -3,9 +3,7 @@ package dto
 import (
 	"PatientManager/model"
 	"PatientManager/util/cerror"
-	"PatientManager/util/format"
 	"fmt"
-	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -29,12 +27,6 @@ func (dto *UserDto) ToModel() (*model.User, error) {
 		return nil, cerror.ErrBadUuid
 	}
 
-	bod, err := time.Parse(format.DateFormat, dto.BirthDate)
-	if err != nil {
-		zap.S().Errorf("Failed to parse BirthDate = %s, err = %+v", dto.BirthDate, err)
-		return nil, cerror.ErrBadDateFormat
-	}
-
 	role, err := model.StoUserRole(dto.Role)
 	if err != nil {
 		zap.S().Errorf("Failed to parse role = %+v, err = %+v", dto.Role, err)
@@ -45,9 +37,6 @@ func (dto *UserDto) ToModel() (*model.User, error) {
 		Uuid:      uuid,
 		FirstName: dto.FirstName,
 		LastName:  dto.LastName,
-		OIB:       dto.OIB,
-		Residence: dto.Residence,
-		BirthDate: bod,
 		Email:     dto.Email,
 		Role:      role,
 	}, nil
@@ -59,9 +48,6 @@ func (dto UserDto) FromModel(m *model.User) UserDto {
 		Uuid:      m.Uuid.String(),
 		FirstName: m.FirstName,
 		LastName:  m.LastName,
-		OIB:       m.OIB,
-		Residence: m.Residence,
-		BirthDate: m.BirthDate.Format(format.DateFormat),
 		Email:     m.Email,
 		Role:      fmt.Sprint(m.Role),
 	}

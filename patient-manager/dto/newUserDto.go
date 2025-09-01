@@ -3,9 +3,7 @@ package dto
 import (
 	"PatientManager/model"
 	"PatientManager/util/cerror"
-	"PatientManager/util/format"
 	"fmt"
-	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -25,11 +23,6 @@ type NewUserDto struct {
 
 // ToModel create a model from a dto
 func (dto *NewUserDto) ToModel() (*model.User, error) {
-	bod, err := time.Parse(format.DateFormat, dto.BirthDate)
-	if err != nil {
-		zap.S().Errorf("Bad date time format need %s has %s", format.DateFormat, dto.BirthDate)
-		return nil, cerror.ErrBadDateFormat
-	}
 	role, err := model.StoUserRole(dto.Role)
 	if err != nil {
 		zap.S().Error("Failed to parse role = %+v, err = %+v", dto.Role, err)
@@ -47,9 +40,6 @@ func (dto *NewUserDto) ToModel() (*model.User, error) {
 		Uuid:      uuid.New(),
 		FirstName: dto.FirstName,
 		LastName:  dto.LastName,
-		OIB:       dto.OIB,
-		Residence: dto.Residence,
-		BirthDate: bod,
 		Email:     dto.Email,
 		Role:      role,
 	}, nil
@@ -61,9 +51,6 @@ func (dto *NewUserDto) FromModel(m *model.User) *NewUserDto {
 		Uuid:      m.Uuid.String(),
 		FirstName: m.FirstName,
 		LastName:  m.LastName,
-		OIB:       m.OIB,
-		Residence: m.Residence,
-		BirthDate: m.BirthDate.Format(format.DateFormat),
 		Email:     m.Email,
 		Role:      fmt.Sprint(m.Role),
 	}

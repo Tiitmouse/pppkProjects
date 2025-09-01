@@ -225,56 +225,6 @@ paths:
       summary: Update user with new dat
       tags:
       - user
-  /user/{uuid}/generate-token:
-    post:
-      parameters:
-      - description: User UUID
-        in: path
-        name: uuid
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-        "404":
-          description: Not Found
-        "500":
-          description: Internal Server Error
-      summary: Generate a new police token for a user
-      tags:
-      - user
-  /user/{uuid}/police-token:
-    patch:
-      parameters:
-      - description: User UUID
-        in: path
-        name: uuid
-        required: true
-        type: string
-      - description: Police token
-        in: body
-        name: model
-        required: true
-        schema:
-          type: object
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-        "404":
-          description: Not Found
-        "500":
-          description: Internal Server Error
-      summary: Set police token for a user
-      tags:
-      - user
   /user/all-users:
     get:
       description: Fetches all users for superadmin
@@ -340,27 +290,6 @@ paths:
         "500":
           description: Internal Server Error
       summary: get user with oib
-      tags:
-      - user
-  /user/police-officers:
-    get:
-      description: Fetches all police officers for MUP Admin
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/dto.UserDto'
-            type: array
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-        "500":
-          description: Internal Server Error
-      summary: Get all police officers for MUP Admin
       tags:
       - user
   /user/search:
