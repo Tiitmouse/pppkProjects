@@ -1,9 +1,6 @@
 export enum UserRole {
-    HAK = 'hak',
-    MupAdmin = 'mupadmin',
-    Osoba = 'osoba',
-    Firma = 'firma',
-    Policija = 'policija',
+    Patient = 'Patient',
+    Doctor = 'Doctor',
     SuperAdmin = 'superadmin'
   }
   

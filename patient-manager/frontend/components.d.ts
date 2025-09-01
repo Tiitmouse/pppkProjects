@@ -9,11 +9,11 @@ declare module 'vue' {
   export interface GlobalComponents {
     AppFooter: typeof import('./src/components/AppFooter.vue')['default']
     ConfirmDialog: typeof import('./src/components/confirmDialog.vue')['default']
+    CreateDoctor: typeof import('./src/components/CreateDoctor.vue')['default']
     CreatePoliceOfficer: typeof import('./src/components/CreatePoliceOfficer.vue')['default']
     CreatePoliceOfficerForm: typeof import('./src/components/CreatePoliceOfficerForm.vue')['default']
     CreateUser: typeof import('./src/components/CreateUser.vue')['default']
     CreateUserForm: typeof import('./src/components/CreateUserForm.vue')['default']
-    DriverLicence: typeof import('./src/components/DriverLicence.vue')['default']
     FilterDeregistration: typeof import('./src/components/vehicleData/FilterDeregistration.vue')['default']
     Header: typeof import('./src/components/Header.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']

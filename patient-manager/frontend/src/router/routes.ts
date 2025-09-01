@@ -18,36 +18,6 @@ export const routes = [
       layout: 'loginLayout',
     },
   },
-  {
-    path: '/traffic-license',
-    name: 'traffic-license',
-    component: () => import(/* @vite-ignore */ '@/pages/traffic-license.vue'),
-    meta: {
-      allowedRoles: [UserRole.Osoba],
-      layout: 'default',
-      breadcrumbName: "Prometna dozvola"
-    },
-  },
-  {
-    path: '/driver-license',
-    name: 'driver-license',
-    component: () => import(/* @vite-ignore */ '@/pages/driver-license.vue'),
-    meta: {
-      allowedRoles: [UserRole.Osoba],
-      layout: 'default',
-      breadcrumbName: "Vozačka dozvola"
-    },
-  },
-  {
-    path: '/devices',
-    name: 'devices',
-    component: () => import(/* @vite-ignore */ '@/pages/devices.vue'),
-    meta: {
-      allowedRoles: [UserRole.Osoba],
-      layout: 'default',
-      breadcrumbName: "Uređaji"
-    },
-  },
   // Routes previously generated from "Akcije" group
   {
     path: '/new-user',

@@ -1,6 +1,6 @@
 <template>
     <div >
-        hi from driver licences
+        hi from patient list
     </div>
 </template>
 
