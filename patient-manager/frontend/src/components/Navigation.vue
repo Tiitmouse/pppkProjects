@@ -11,10 +11,10 @@
           {{ link.Name }}
         </v-list-item>
       </template>
-      <v-list-item class="title">Profil</v-list-item>
+      <v-list-item class="title">Profile</v-list-item>
       <v-divider></v-divider>
-      <v-list-item link item @click="router.push({ name: 'details' })">Detalji</v-list-item>
-      <v-list-item link item class="logout" @click="authStore.Logout">Odjava</v-list-item>
+      <v-list-item link item @click="router.push({ name: 'details' })">Details</v-list-item>
+      <v-list-item link item class="logout" @click="authStore.Logout">Logout</v-list-item>
     </v-navigation-drawer>
   </v-container>
   <slot></slot>

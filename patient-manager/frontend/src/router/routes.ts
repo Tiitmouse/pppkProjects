@@ -18,7 +18,6 @@ export const routes = [
       layout: 'loginLayout',
     },
   },
-  // Routes previously generated from "Akcije" group
   {
     path: '/new-user',
     name: 'new-user',
@@ -26,7 +25,7 @@ export const routes = [
     meta: {
       allowedRoles: [UserRole.SuperAdmin],
       layout: 'default',
-      breadcrumbName: "Novi korisnik"
+      breadcrumbName: "New user"
     },
   },
   {
@@ -36,7 +35,7 @@ export const routes = [
     meta: {
       allowedRoles: [UserRole.SuperAdmin],
       layout: 'default',
-      breadcrumbName: "Korisnici"
+      breadcrumbName: "Users"
     },
   },
   {
@@ -46,7 +45,7 @@ export const routes = [
     meta: {
       allowedRoles: [],
       layout: 'default',
-      breadcrumbName: "Tvoji podaci"
+      breadcrumbName: "My data"
     },
   }
 

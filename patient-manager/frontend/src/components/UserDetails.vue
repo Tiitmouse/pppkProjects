@@ -1,7 +1,7 @@
 <template>
-  <v-container>
-    <v-card class="mx-auto pa-6" max-width="800">
-      <v-card-title class="text-h5 mb-4">User Details</v-card-title>
+ <v-container class="d-flex align-center justify-center">
+      <v-card width="800" rounded="lg" elevation="3" class="pa-8 ma-8" variant="tonal">
+      <v-card-title class="text-h5 pb-3">User Details</v-card-title>
 
       <div v-if="user">
         <v-text-field v-model="user.firstName" density="compact" label="First Name" variant="underlined"
@@ -31,7 +31,7 @@ import { useSnackbar } from '@/components/SnackbarProvider.vue';
 
 const user = ref<User>()
 const authStore = useAuthStore();
-const snackbar = useSnackbar()
+const snackbar = useSnackbar() 
 
 onMounted(async () => {
   const rez = authStore.User

@@ -1,9 +1,9 @@
 <template>
   <div>
     <v-container class="d-flex align-center justify-center">
-      <v-card width="800" rounded="lg" elevation="3" class="pa-8">
-        <div>
-          <div class="text-h5 mr-4">Create new</div>
+      <v-card width="800" rounded="lg" elevation="3" class="pa-8 ma-8" variant="tonal">
+        <div class="d-flex align-center justify-space-between pb-3">
+          <v-card-title class="text-h5 pa-0">Create new</v-card-title>
           <v-radio-group v-model="selectedRole" inline hide-details class="mt-0 pt-0">
             <v-radio label="Doctor" value="Doctor"></v-radio>
             <v-radio label="Patient" value="Patient"></v-radio>
