@@ -1,10 +1,10 @@
 <template>
     <div>
-        <Search label="Pretraga korisnika" tooltip="Unesite ime i/ili prezime korisnika" placeholder="Ime Prezime"
+        <Search label="User list" tooltip="Insert name and/or surname of the desired user(s)" placeholder="First Last"
             :on-click="handleSearch" />
         <v-data-table-virtual :headers="headers" :items="users" height="400" item-value="name" fixed-header>
             <template v-slot:no-data>
-                Nema pronađenih korisnika.
+                No users found.
             </template>
             <template v-slot:item.actions="{ item }">
                 <div class="d-flex ga-2 justify-end">
@@ -44,10 +44,10 @@
                 <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn color="blue-grey-lighten-1" variant="text" @click="closeDialog">
-                        Odustani
+                        quit
                     </v-btn>
                     <v-btn color="blue-grey-darken-1" variant="text" @click="saveItem">
-                        Spremi
+                        save
                     </v-btn>
                 </v-card-actions>
             </v-card>
