@@ -4,7 +4,7 @@
       <v-btn icon @click="drawer.toggle">
         <v-icon>mdi-menu</v-icon>
       </v-btn>
-      <v-app-bar-title @click="router.push({ name: 'index' })" class="header">ePrometna</v-app-bar-title>
+      <v-app-bar-title @click="router.push({ name: 'index' })" class="header">PatientManager</v-app-bar-title>
       <v-app-bar-title @click="router.push({ name: 'details'})" class="user-email">{{ userEmail }}</v-app-bar-title>
     </v-app-bar>
   </v-container>

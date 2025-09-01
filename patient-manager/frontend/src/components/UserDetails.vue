@@ -10,15 +10,6 @@
         <v-text-field v-model="user.lastName" density="compact" label="Last Name" variant="underlined"
           prepend-inner-icon="mdi-account-outline" readonly class="mb-4"></v-text-field>
 
-        <v-text-field v-model="user.oib" density="compact" label="OIB" variant="underlined"
-          prepend-inner-icon="mdi-id-card" readonly class="mb-4"></v-text-field>
-
-        <v-text-field :model-value="user.residence" density="compact" label="Residence" variant="underlined"
-          prepend-inner-icon="mdi-home-outline" readonly class="mb-4"></v-text-field>
-
-        <v-text-field v-model="user.birthDate" density="compact" label="Birth Date" variant="underlined"
-          prepend-inner-icon="mdi-calendar" readonly class="mb-4"></v-text-field>
-
         <v-text-field v-model="user.email" density="compact" label="Email" variant="underlined"
           prepend-inner-icon="mdi-email-outline" readonly class="mb-4"></v-text-field>
 
@@ -26,7 +17,7 @@
           prepend-inner-icon="mdi-shield-account-outline" readonly class="mb-4"></v-text-field>
       </div>
       <div v-else>
-        You don't have detials
+        You don't have details
       </div>
     </v-card>
   </v-container>

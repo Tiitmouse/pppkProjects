@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-card class="mx-auto pa-6 pb-8" elevation="8" max-width="600" rounded="lg">
-      <div class="text-h5 mb-6">Create New User</div>
+      <div class="text-h5 mb-6">Create New Doctor</div>
 
       <UserForm v-model:user="user" v-model:password="password" :errors="errors" @update:errors="updateErrors" />
 

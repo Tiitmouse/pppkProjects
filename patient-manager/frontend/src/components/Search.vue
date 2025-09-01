@@ -31,10 +31,6 @@ const props = defineProps({
     }
 })
 
-// TODO:
-// Here lies loaded
-// depricated by fran
-// const loaded = ref(false)
 const loading = ref(false)
 const showTooltip = ref(false)
 const searchQuery = ref(''); 

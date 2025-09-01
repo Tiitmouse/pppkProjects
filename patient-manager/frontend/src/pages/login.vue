@@ -1,6 +1,6 @@
 <template>
   <div class="login-header">
-    <h1>ePrometna</h1>
+    <h1>PatientManager</h1>
   </div>
   <LoginView />
 </template>
