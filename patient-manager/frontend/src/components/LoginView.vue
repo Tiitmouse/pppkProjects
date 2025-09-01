@@ -11,7 +11,7 @@
         Password
       </div>
 
-      <v-text-field v-model="password" :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
+      <v-text-field v-model="password" 
         :type="visible ? 'text' : 'password'" density="compact" placeholder="Enter your password"
         prepend-inner-icon="mdi-lock-outline" variant="outlined" :error-messages="passwordError ? [passwordError] : []"
         @click:append-inner="visible = !visible" @focus="passwordError = ''"></v-text-field>
@@ -68,10 +68,7 @@ const validateForm = () => {
   if (!password.value) {
     passwordError.value = 'Password is required';
     isValid = false;
-  } else if (password.value.length < 6) {
-    passwordError.value = 'Password must be at least 6 characters';
-    isValid = false;
-  }
+  } 
 
   return isValid;
 };
