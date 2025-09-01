@@ -7,13 +7,12 @@
     <v-icon icon="$vuetify" size="16" />
       <a
         class="text-decoration-none on-surface"
-        href="https://github.com/OICAR-07-ePrometna"
+        href="https://github.com/Tiitmouse/pppkProjects/tree/master/patient-manager"
         rel="noopener noreferrer"
         target="_blank"
         title="Organisation GitHub"
       >
         <v-icon icon="mdi-github" size="16" />
-        <span class="d-none d-sm-inline-block">Visit our GitHub organisation page</span>
       </a>
     </div>
 
@@ -21,16 +20,7 @@
       class="text-caption text-disabled"
       style="position: absolute; right: 16px;"
     >
-      &copy; 2025 <span class="d-none d-sm-inline-block">Algebra, OICAR</span>
-      —
-      <a
-        class="text-decoration-none on-surface"
-        href="https://www.apache.org/licenses/LICENSE-2.0"
-        rel="noopener noreferrer"
-        target="_blank"
-      >
-      Apache 2.0 Licence
-      </a>
+      &copy; 2025 <span class="d-none d-sm-inline-block">Algebra, PPPK</span>
     </div>
   </v-footer>
 </template>
