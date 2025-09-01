@@ -28,7 +28,7 @@
                             <v-text-field v-model="editedItem.oib" label="OIB"></v-text-field>
                         </v-col>
                         <v-col cols="12" sm="6">
-                            <v-text-field v-model="editedItem.residence" label="Prebivalište"></v-text-field>
+                            <v-text-field v-model="editedItem.gender" label="Prebivalište"></v-text-field>
                         </v-col>
                         <v-col cols="12" sm="6">
                             <v-text-field v-model="editedItem.birthDate" label="Datum rođenja"></v-text-field>
@@ -83,7 +83,7 @@ const editedItem = ref<User>({
     firstName: '',
     lastName: '',
     oib: '',
-    residence: '',
+    gender: '',
     birthDate: '',
     email: '',
     role: undefined!,
@@ -155,7 +155,7 @@ const closeDialog = () => {
         firstName: '',
         lastName: '',
         oib: '',
-        residence: '',
+        gender: '',
         birthDate: '',
         email: '',
         role: undefined!,

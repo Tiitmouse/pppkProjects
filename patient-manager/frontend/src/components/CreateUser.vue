@@ -30,11 +30,19 @@
           <v-text-field v-model="user.oib" :error-messages="errors.oib" label="OIB" variant="outlined" density="compact"
             class="mt-2" @input="updateErrors('oib', '')"></v-text-field>
 
-          <v-text-field v-model="user.residence" :error-messages="errors.residence" label="Residence" variant="outlined"
-            density="compact" class="mt-2" @input="updateErrors('residence', '')"></v-text-field>
-
           <v-text-field v-model="user.birthDate" :error-messages="errors.birthDate" label="Birth Date" type="date"
-            variant="outlined" density="compact" class="mt-2" @input="updateErrors('birthDate', '')"></v-text-field>
+            variant="outlined" density="compact" @input="updateErrors('birthDate', '')"></v-text-field>
+
+          <div class="d-flex align-center">
+            <div class="v-label text-body-2 text-medium-emphasis mr-4">Gender</div>
+            <v-radio-group v-model="user.gender" inline :error-messages="errors.gender"
+              @change="updateErrors('gender', '')" hide-details="auto">
+              <v-radio label="F" value="F"></v-radio>
+              <v-radio label="M" value="M"></v-radio>
+            </v-radio-group>
+          </div>
+
+
         </div>
 
         <div class="d-flex gap-4 mt-6">
@@ -74,7 +82,7 @@ const createInitialUser = (): User => ({
   firstName: '',
   lastName: '',
   oib: '',
-  residence: '',
+  gender: '',
   birthDate: '',
   email: '',
   role: UserRole.Doctor
@@ -88,13 +96,14 @@ const password = ref('');
 const isSubmitting = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
+
 const errors = reactive<FormErrors>({
   firstName: '',
   lastName: '',
   email: '',
   password: '',
   oib: '',
-  residence: '',
+  gender: '',
   birthDate: '',
 });
 
@@ -120,7 +129,7 @@ const validateForm = (): boolean => {
   if (selectedRole.value === UserRole.Patient) {
     if (!user.value.oib.trim()) { errors.oib = 'OIB is required'; isValid = false; }
     else if (!isOibValid(user.value.oib)) { errors.oib = 'Invalid OIB'; isValid = false; }
-    if (!user.value.residence.trim()) { errors.residence = 'Residence is required'; isValid = false; }
+    if (!user.value.gender) { errors.gender = 'Gender is required'; isValid = false; }
     if (!user.value.birthDate) { errors.birthDate = 'Birth date is required'; isValid = false; }
   }
 

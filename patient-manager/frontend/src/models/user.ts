@@ -5,9 +5,8 @@ export interface User {
   firstName: string;
   lastName: string;
   oib: string;
-  residence: string;
   birthDate: string;
+  gender: string;
   email: string;
   role: UserRole;
-  policeToken?: string;
 }
