@@ -1,0 +1,14 @@
+// @eslint ignore
+{
+    "files": [
+        "./typed-router.d.ts"
+    ],
+    "references": [
+        {
+            "path": "./tsconfig.node.json"
+        },
+        {
+            "path": "./tsconfig.app.json"
+        }
+    ]
+}

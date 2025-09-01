@@ -1,0 +1,1 @@
+import{_ as o}from"./login-4tjsBPU7.js";import{d as n,c as r,a,e as t,F as s,o as m}from"./index-DadnvKS_.js";import"./VTextField-B4Uf_z38.js";const d=n({__name:"login",setup(l){return(c,e)=>(m(),r(s,null,[e[0]||(e[0]=a("div",{class:"login-header"},[a("h1",null,"ePrometna")],-1)),t(o)],64))}});export{d as default};

@@ -1,0 +1,124 @@
+version: "3"
+
+vars:
+  PROJECT_CODE: PatientManager
+
+  # folders
+  BIN_FOLDER: bin
+  TEST_PCKGS: ./util/* ./controller ./service ./dto
+
+  # build options
+  # -v  print the names of packages as they are compiled
+  # -s  omit the symbol table and debug information
+  # -w  omit the DWARF symbol table
+  #
+  BUILD_OPTIONS: -v -ldflags="-s -w "
+
+includes:
+  osbuild:
+    taskfile: taskfile_{{OS}}.yaml
+    flatten: true
+
+tasks:
+  default:
+    cmds:
+      - task: list-tools
+    silent: false
+
+  dev:
+    desc: "Starts both Server (task dev) and WebApp (npm run dev) in parallel"
+    deps: [generate-swagger, start-db]
+    cmds:
+      - defer: { task: stop-db }
+      - task: dev-deps
+    silent: true
+    signal: SIGINT
+
+  dev-deps:
+    desc: "Used to start both server and webapp in parralel"
+    deps:
+      - task: server-dev
+      - task: webapp-dev
+    parallel: true
+    internal: true
+    signal: SIGINT
+
+  server-dev:
+    desc: "start server with air"
+    cmds:
+      - cmd: "air ."
+      # TODO: see that air excluds /frontend folder and some others
+      # - cmd: "go run ."
+    signal: SIGINT
+    internal: true
+
+  webapp-dev:
+    desc: "Runs 'npm install' and 'npm run dev' in frontend"
+    dir: ./frontend
+    cmds:
+      - cmd: npm install
+      - cmd: npm run dev
+    signal: SIGINT
+    internal: true
+
+  clean:
+    deps: [clean-db, clean-modcache, clean-cache]
+    cmds:
+      - task: tidy
+      - task: verify
+      - task: build
+        vars: { TASK_OPTIONS: "-a" }
+    silent: false
+
+  clean-modcache:
+    cmd: go clean --modcache
+    internal: true
+
+  clean-cache:
+    cmd: go clean -cache
+    internal: true
+
+  verify:
+    cmds:
+      - go mod verify
+      - go vet ./...
+
+  update:
+    cmds:
+      - go get -u all
+
+  test:
+    cmd: go test -v {{.TEST_PCKGS}}
+
+  coverage:
+    cmds:
+      - cmd: go test {{.TEST_PCKGS}} -coverprofile=coverage.out
+      - cmd: go tool cover -html=coverage.out
+
+  start-db:
+    cmds:
+      - cmd: docker-compose up -d
+
+  stop-db:
+    cmd: docker-compose stop
+
+  clean-db:
+    cmd: docker-compose down -v
+
+  generate-swagger:
+    internal: true
+    cmds:
+      - cmd: swag fmt
+      - cmd: swag init
+      # - cmd: swag-v2 init --v3.1 --outputTypes yaml
+
+  list:
+    cmds:
+      - go list -u -m all
+
+  list-tools:
+    cmds:
+      - go version
+      - gcc --version
+      - task --version
+    silent: true

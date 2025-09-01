@@ -1,0 +1,1 @@
+import{_ as t,c as a,a as e,b as n,o as r}from"./index-DadnvKS_.js";const s={},c={class:"center-container"};function d(i,o){return r(),a("div",c,o[0]||(o[0]=[e("h1",null,[n(" Dobrodošli u "),e("b",null,"ePrometna")],-1),e("h3",null," ~Za početak odaberite aktivnost iz izbornika ",-1)]))}const _=t(s,[["render",d],["__scopeId","data-v-7a602f9d"]]);export{_ as default};

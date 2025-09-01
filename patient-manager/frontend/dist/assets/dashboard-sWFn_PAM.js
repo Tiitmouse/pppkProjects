@@ -1,0 +1,1 @@
+import{_ as e,c as o,o as a}from"./index-DadnvKS_.js";const c={};function r(s,t){return a(),o("div",null," Hello from dashboard ")}const _=e(c,[["render",r],["__scopeId","data-v-ace19b54"]]);export{_ as default};
