@@ -1,106 +1,62 @@
 <template>
   <div>
-    <v-card class="mx-auto pa-6 pb-8" elevation="8" max-width="600" rounded="lg">
-      <div class="d-flex align-center mb-4">
-        <div class="text-h5 mr-4">Create new</div>
-        <v-radio-group v-model="selectedRole" inline hide-details class="mt-0 pt-0">
-          <v-radio label="Doctor" value="Doctor"></v-radio>
-          <v-radio label="Patient" value="Patient"></v-radio>
-        </v-radio-group>
-      </div>
+    <v-container class="d-flex align-center justify-center">
+      <v-card width="800" rounded="lg" elevation="3" class="pa-8">
+        <div>
+          <div class="text-h5 mr-4">Create new</div>
+          <v-radio-group v-model="selectedRole" inline hide-details class="mt-0 pt-0">
+            <v-radio label="Doctor" value="Doctor"></v-radio>
+            <v-radio label="Patient" value="Patient"></v-radio>
+          </v-radio-group>
+        </div>
 
-      <!-- Common Fields for Both Roles -->
-      <v-text-field
-        v-model="user.firstName"
-        :error-messages="errors.firstName"
-        label="First Name"
-        variant="outlined"
-        density="compact"
-        @input="updateErrors('firstName', '')"
-      ></v-text-field>
+        <!-- Common Fields for Both Roles -->
+        <v-text-field v-model="user.firstName" :error-messages="errors.firstName" label="First Name" variant="outlined"
+          density="compact" @input="updateErrors('firstName', '')"></v-text-field>
 
-      <v-text-field
-        v-model="user.lastName"
-        :error-messages="errors.lastName"
-        label="Last Name"
-        variant="outlined"
-        density="compact"
-        class="mt-2"
-        @input="updateErrors('lastName', '')"
-      ></v-text-field>
+        <v-text-field v-model="user.lastName" :error-messages="errors.lastName" label="Last Name" variant="outlined"
+          density="compact" class="mt-2" @input="updateErrors('lastName', '')"></v-text-field>
 
-      <v-text-field
-        v-model="user.email"
-        :error-messages="errors.email"
-        label="Email Address"
-        type="email"
-        variant="outlined"
-        density="compact"
-        class="mt-2"
-        @input="updateErrors('email', '')"
-      ></v-text-field>
+        <v-text-field v-model="user.email" :error-messages="errors.email" label="Email Address" type="email"
+          variant="outlined" density="compact" class="mt-2" @input="updateErrors('email', '')"
+          autocomplete="off"></v-text-field>
 
-      <v-text-field
-        v-model="password"
-        :error-messages="errors.password"
-        label="Password"
-        type="password"
-        variant="outlined"
-        density="compact"
-        class="mt-2"
-        @input="updateErrors('password', '')"
-      ></v-text-field>
+        <v-text-field v-model="password" :error-messages="errors.password" label="Password" type="password"
+          variant="outlined" density="compact" class="mt-2" @input="updateErrors('password', '')"
+          autocomplete="off"></v-text-field>
 
-      <!-- Patient-Specific Fields -->
-      <div v-if="selectedRole === 'Patient'">
-        <v-text-field
-          v-model="user.oib"
-          :error-messages="errors.oib"
-          label="OIB"
-          variant="outlined"
-          density="compact"
-          class="mt-2"
-          @input="updateErrors('oib', '')"
-        ></v-text-field>
-        
-        <v-text-field
-          v-model="user.residence"
-          :error-messages="errors.residence"
-          label="Residence"
-          variant="outlined"
-          density="compact"
-          class="mt-2"
-          @input="updateErrors('residence', '')"
-        ></v-text-field>
+        <!-- Patient-Specific Fields -->
+        <div v-if="selectedRole === 'Patient'">
+          <v-text-field v-model="user.oib" :error-messages="errors.oib" label="OIB" variant="outlined" density="compact"
+            class="mt-2" @input="updateErrors('oib', '')"></v-text-field>
 
-        <v-text-field
-          v-model="user.birthDate"
-          :error-messages="errors.birthDate"
-          label="Birth Date"
-          type="date"
-          variant="outlined"
-          density="compact"
-          class="mt-2"
-          @input="updateErrors('birthDate', '')"
-        ></v-text-field>
-      </div>
+          <v-text-field v-model="user.residence" :error-messages="errors.residence" label="Residence" variant="outlined"
+            density="compact" class="mt-2" @input="updateErrors('residence', '')"></v-text-field>
 
-      <div class="d-flex gap-4 mt-6">
-        <v-btn color="primary" size="large" block :loading="isSubmitting" :disabled="isSubmitting" @click="submitForm">
-          {{ isSubmitting ? 'Creating...' : 'Create User' }}
-        </v-btn>
+          <v-text-field v-model="user.birthDate" :error-messages="errors.birthDate" label="Birth Date" type="date"
+            variant="outlined" density="compact" class="mt-2" @input="updateErrors('birthDate', '')"></v-text-field>
+        </div>
 
-      </div>
+        <div class="d-flex gap-4 mt-6">
+          <v-btn color="primary" size="large" block :loading="isSubmitting" :disabled="isSubmitting"
+            @click="submitForm">
+            {{ isSubmitting ? 'Creating...' : 'Create User' }}
+          </v-btn>
 
-      <v-alert v-if="errorMessage" type="error" variant="tonal" class="mt-6" closable @click:close="errorMessage = ''">
-        {{ errorMessage }}
-      </v-alert>
+        </div>
 
-      <v-alert v-if="successMessage" type="success" variant="tonal" class="mt-6" closable
-        @click:close="successMessage = ''">
-        {{ successMessage }}
-      </v-alert>
-    </v-card>
+        <v-alert v-if="errorMessage" type="error" variant="tonal" class="mt-6" closable
+          @click:close="errorMessage = ''">
+          {{ errorMessage }}
+        </v-alert>
+
+        <v-alert v-if="successMessage" type="success" variant="tonal" class="mt-6" closable
+          @click:close="successMessage = ''">
+          {{ successMessage }}
+        </v-alert>
+
+      </v-card>
+    </v-container>
   </div>
 </template>
 
@@ -108,7 +64,7 @@
 import { ref, reactive, watch } from 'vue';
 import type { User } from '@/models/user';
 import { UserRole } from '@/enums/userRole';
-import type { FormErrors } from '@/models/formErrors'; 
+import type { FormErrors } from '@/models/formErrors';
 import { isOibValid } from '@/utils/validateOIB';
 import { isEmailValid } from '@/utils/validateEmail';
 import { createUser } from '@/services/userService';
@@ -181,7 +137,6 @@ const submitForm = async () => {
 
   isSubmitting.value = true;
   try {
-    // Set the role on the user object before sending
     user.value.role = selectedRole.value;
 
     const createdUser = await createUser(user.value, password.value);
@@ -215,4 +170,3 @@ watch(selectedRole, (newRole) => {
   gap: 1rem;
 }
 </style>
-
