@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type Patinet struct {
+type Patient struct {
 	gorm.Model
 	Uuid            uuid.UUID `gorm:"type:uuid;unique;not null"`
 	FirstName       string    `gorm:"type:varchar(100);not null"`
@@ -21,7 +21,7 @@ type Patinet struct {
 	Doctor          User
 }
 
-func (p *Patinet) UpdatePatient(patient *Patinet) *Patinet {
+func (p *Patient) UpdatePatient(patient *Patient) *Patient {
 	p.BirthDate = patient.BirthDate
 	p.FirstName = patient.FirstName
 	p.LastName = patient.LastName

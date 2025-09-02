@@ -4,7 +4,7 @@ package model
 func GetAllModels() []any {
 	return []any{
 		&User{},
-		&Patinet{},
+		&Patient{},
 		&MedicalRecord{},
 		&Checkup{},
 		&Prescription{},

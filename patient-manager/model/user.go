@@ -41,7 +41,7 @@ type User struct {
 	Email        string    `gorm:"type:varchar(100);unique;not null"`
 	PasswordHash string    `gorm:"type:varchar(255);not null"`
 	Role         UserRole  `gorm:"type:varchar(20);not null"`
-	Patients     []Patinet `gorm:"foreignKey:DoctorID"`
+	Patients     []Patient `gorm:"foreignKey:DoctorID"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) error {
