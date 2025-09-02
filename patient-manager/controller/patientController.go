@@ -17,6 +17,17 @@ func NewPatientController(patientService service.PatientService) *PatientControl
 	return &PatientController{patientService: patientService}
 }
 
+func (c *PatientController) RegisterEndpoints(router *gin.RouterGroup) {
+	patients := router.Group("/patients")
+	{
+		patients.GET("", c.GetAllPatients)
+		patients.GET("/:id", c.GetPatientById)
+		patients.POST("", c.CreatePatient)
+		patients.PUT("/:id", c.UpdatePatient)
+		patients.DELETE("/:id", c.DeletePatient)
+	}
+}
+
 // GetAllPatients godoc
 // @Summary      List all patients
 // @Description  get all patients

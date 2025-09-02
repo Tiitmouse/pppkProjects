@@ -6,7 +6,6 @@ import (
 	"PatientManager/model"
 	"PatientManager/service"
 	"PatientManager/util/auth"
-	"PatientManager/util/middleware"
 	"errors"
 	"net/http"
 
@@ -36,13 +35,15 @@ func NewUserController() *UserController {
 	return controller
 }
 
-func (u *UserController) RegisterEndpoints(api *gin.RouterGroup) {
-	// create a group with the name of the router
-	group := api.Group("/user")
-
-	// Protected endpint
-	group.GET("/my-data", middleware.Protect(), u.getLoggedInUser)
-
+func (u *UserController) RegisterEndpoints(router *gin.RouterGroup) {
+	user := router.Group("/user")
+	{
+		user.POST("", u.create)
+		user.GET("", u.getAllUsersForSuperAdmin)
+		user.GET("/:uuid", u.get)
+		user.PUT("/:uuid", u.update)
+		user.DELETE("/:uuid", u.delete)
+	}
 }
 
 // UserExample godoc

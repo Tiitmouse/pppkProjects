@@ -9,9 +9,9 @@ import (
 )
 
 func patientRoutes(rg *gin.RouterGroup) {
-	app.Invoke(func(patientController *controller.PatientController, authMiddleware *middleware.AuthMiddleware) {
+	app.Invoke(func(patientController *controller.PatientController) {
 		patient := rg.Group("/patients")
-		patient.Use(authMiddleware.Handler())
+		patient.Use(middleware.Protect())
 		{
 			patient.GET("", patientController.GetAllPatients)
 			patient.POST("", patientController.CreatePatient)
