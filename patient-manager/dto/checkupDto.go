@@ -19,7 +19,6 @@ type CheckupDto struct {
 func (dto *CheckupDto) FromModel(c *model.Checkup) *CheckupDto {
 	return &CheckupDto{
 		Uuid:            c.Uuid,
-		PatientID:       c.PatientID,
 		CheckupDate:     c.CheckupDate,
 		Type:            c.Type,
 		MedicalRecordID: c.MedicalRecordID,
@@ -30,7 +29,6 @@ func (dto *CheckupDto) FromModel(c *model.Checkup) *CheckupDto {
 func (dto *CheckupDto) ToModel() (*model.Checkup, error) {
 	return &model.Checkup{
 		Uuid:            dto.Uuid,
-		PatientID:       dto.PatientID,
 		CheckupDate:     dto.CheckupDate,
 		Type:            dto.Type,
 		MedicalRecordID: dto.MedicalRecordID,

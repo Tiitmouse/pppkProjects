@@ -1,0 +1,104 @@
+package service
+
+import (
+	"PatientManager/app"
+	"PatientManager/model"
+
+	"github.com/google/uuid"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
+)
+
+type ICheckupService interface {
+	Create(checkup *model.Checkup, recordID uint) (*model.Checkup, error)
+	Update(checkupUuid uuid.UUID, checkupUpdateData *model.Checkup) (*model.Checkup, error)
+	//GetAll(recordUuid uuid.UUID) ([]model.Checkup)
+	Delete(checkupUuid uuid.UUID) error
+}
+
+type CheckupService struct {
+	db     *gorm.DB
+	logger *zap.SugaredLogger
+}
+
+func NewChekupService() ICheckupService {
+	var service ICheckupService
+	app.Invoke(func(db *gorm.DB, logger *zap.SugaredLogger) {
+		service = &CheckupService{
+			db:     db,
+			logger: logger,
+		}
+	})
+
+	return service
+}
+
+func (c *CheckupService) Create(checkup *model.Checkup, recordID uint) (*model.Checkup, error) {
+	checkup.Uuid = uuid.New()
+	c.logger.Infof("Creating checkup for medical record ID: %d", recordID)
+
+	rez := c.db.Create(checkup)
+	if rez.Error != nil {
+		c.logger.Errorf("Error creating checkup: %v", rez.Error)
+		return nil, rez.Error
+	}
+
+	c.logger.Infof("Successfully created checkup with UUID: %s", checkup.Uuid)
+	return checkup, nil
+}
+
+func (c *CheckupService) findByUuid(checkupUuid uuid.UUID) (*model.Checkup, error) {
+	var checkup model.Checkup
+	rez := c.db.
+		Where("uuid = ?", checkupUuid).
+		First(&checkup)
+
+	if rez.Error != nil {
+		if rez.Error == gorm.ErrRecordNotFound {
+			c.logger.Warnf("Checkup with UUID %s not found", checkupUuid)
+		} else {
+			c.logger.Errorf("Error finding checkup with UUID %s: %v", checkupUuid, rez.Error)
+		}
+		return nil, rez.Error
+	}
+	return &checkup, nil
+}
+
+func (c *CheckupService) Update(checkupUuid uuid.UUID, checkupUpdateData *model.Checkup) (*model.Checkup, error) {
+	existingCheckup, err := c.findByUuid(checkupUuid)
+	if err != nil {
+		return nil, err
+	}
+
+	c.logger.Debugf("Updating checkup with UUID: %s", checkupUuid)
+
+	existingCheckup.UpdateCheckup(checkupUpdateData)
+
+	rez := c.db.Save(existingCheckup)
+	if rez.Error != nil {
+		c.logger.Errorf("Error saving updated checkup with UUID %s: %v", checkupUuid, rez.Error)
+		return nil, rez.Error
+	}
+
+	c.logger.Infof("Successfully updated checkup with UUID: %s", checkupUuid)
+	return existingCheckup, nil
+}
+
+func (c *CheckupService) Delete(checkupUuid uuid.UUID) error {
+	c.logger.Infof("Attempting to delete checkup with UUID: %s", checkupUuid)
+
+	rez := c.db.Where("uuid = ?", checkupUuid).Delete(&model.MedicalRecord{})
+
+	if rez.Error != nil {
+		c.logger.Errorf("Error deleting checkup with UUID %s: %v", checkupUuid, rez.Error)
+		return rez.Error
+	}
+
+	if rez.RowsAffected == 0 {
+		c.logger.Warnf("No checkup found with UUID %s to delete", checkupUuid)
+		return gorm.ErrRecordNotFound
+	}
+
+	c.logger.Infof("Successfully checkup with UUID: %s", checkupUuid)
+	return nil
+}
