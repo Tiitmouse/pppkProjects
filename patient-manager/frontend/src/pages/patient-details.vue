@@ -1,5 +1,6 @@
 <template>
     <v-container>
+        <v-card elevation="7" variant="tonal" class="round-xl pa-4">
         <div class="d-flex align-center mb-4">
             <v-btn @click="goBack" color="grey">
                 <v-icon start>mdi-arrow-left</v-icon>
@@ -8,7 +9,7 @@
 
             <v-spacer></v-spacer>
 
-            <v-btn @click="editPatient" color="primary" class="ml-4">
+            <v-btn @click="openEditOptions" color="primary" class="ml-4">
                 <v-icon start>mdi-pencil</v-icon>
                 Edit
             </v-btn>
@@ -16,15 +17,15 @@
                 <v-icon start>mdi-trash-can</v-icon>
                 Delete
             </v-btn>
-            <v-btn @click="openDoctorDialog" color="secondary" class="ml-4">
+            <v-btn @click="isDoctorDialogVisible = true" color="secondary" class="ml-4">
                 <v-icon start>mdi-doctor</v-icon>
                 Doctor
             </v-btn>
         </div>
 
         <v-card v-if="patient" :loading="isLoading">
-             <v-card-title class="pa-4">
-                <span class="text-h5">Patient Details</span>
+            <v-card-title class="pa-4">
+                <span class="text-h5">Patient Carton</span>
             </v-card-title>
             <v-card-text>
                 <v-list lines="two">
@@ -46,19 +47,54 @@
         <v-alert v-else-if="!isLoading" type="error" class="mt-4">
             Patient not found.
         </v-alert>
+
         <div v-if="isLoading" class="text-center pa-10">
             <v-progress-circular indeterminate color="primary"></v-progress-circular>
         </div>
 
+        <OptionsDialogue ref="editOptionsDialog" />
         <ConfirmDialogue ref="confirmDialog" />
-        
+
+        <v-dialog v-model="isEditDialogOpen" persistent max-width="600px">
+            <v-card>
+                 <v-card-title>
+                    <span class="text-h5">Edit Patient Data</span>
+                </v-card-title>
+                <v-card-text>
+                    <PatientEditForm
+                        :patient="patient"
+                        :is-saving="isSaving"
+                        @save="handleUpdatePatient"
+                        @cancel="isEditDialogOpen = false"
+                    />
+                </v-card-text>
+            </v-card>
+        </v-dialog>
+
         <v-dialog v-model="isDoctorDialogVisible" max-width="400px">
-            </v-dialog>
-        
+            <v-card>
+                <v-card-title>
+                    <span class="text-h5">Doctor Assignment</span>
+                </v-card-title>
+                <v-card-text>
+                    This patient is assigned to:
+                    <div class="font-weight-bold mt-2">
+                        Dr. {{ mockDoctor.firstName }} {{ mockDoctor.lastName }}
+                    </div>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="primary" variant="elevated" @click="isDoctorDialogVisible = false">
+                        OK
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
         <v-snackbar v-model="snackbar.visible" :color="snackbar.color" :timeout="3000">
             {{ snackbar.text }}
         </v-snackbar>
-
+        </v-card>
     </v-container>
 </template>
 
@@ -67,8 +103,10 @@ import { ref, onMounted, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { usePatientStore } from '@/stores/patientStore';
 import type { Patient } from '@/stores/patientStore';
-import { deletePatient } from '@/services/patientService';
+import { deletePatient, updatePatient } from '@/services/patientService';
+import OptionsDialogue from '@/components/optionsDialog.vue';
 import ConfirmDialogue from '@/components/confirmDialog.vue';
+import PatientEditForm from '@/components/PatientEditForm.vue';
 
 const router = useRouter();
 const patientStore = usePatientStore();
@@ -76,16 +114,19 @@ const patientStore = usePatientStore();
 const patient = ref<Patient | null>(null);
 const isLoading = ref(true);
 const isDeleting = ref(false);
+const isSaving = ref(false)
 
+const editOptionsDialog = ref();
 const confirmDialog = ref();
 const isDoctorDialogVisible = ref(false);
+const isEditDialogOpen = ref(false);
+
 const mockDoctor = ref({ firstName: 'Ana', lastName: 'Anić' });
 const snackbar = reactive({
     visible: false,
     text: '',
     color: 'success',
 });
-
 
 onMounted(() => {
     if (patientStore.selectedPatient) {
@@ -107,8 +148,38 @@ function goBack() {
     router.back();
 }
 
-function editPatient() {
-    alert('Edit action clicked. (Not implemented yet)');
+async function openEditOptions() {
+    const selectedChoice = await editOptionsDialog.value.Open({
+        Title: 'What would you like to edit?',
+        Options: ['Patient Data', 'Prescriptions', 'Checks']
+    });
+
+    if (selectedChoice === 'Patient Data') {
+        isEditDialogOpen.value = true;
+    } else if (selectedChoice) {
+        // Handle other choices
+        await confirmDialog.value.Open({
+            Title: selectedChoice,
+            Message: `Functionality for "${selectedChoice}" is not yet implemented.`,
+            Options: { noCancel: true }
+        });
+    }
+}
+
+async function handleUpdatePatient(updatedPatientData: Patient) {
+    isSaving.value = true;
+    try {
+        const updatedPatient = await updatePatient(updatedPatientData.id, updatedPatientData);
+        patient.value = updatedPatient; // Refresh local data with the response
+        patientStore.selectedPatient = updatedPatient; // Update the store as well
+        isEditDialogOpen.value = false;
+        showSnackbar('Patient updated successfully.', 'success');
+    } catch (error) {
+        console.error("Failed to update patient:", error);
+        showSnackbar('Failed to update patient.', 'error');
+    } finally {
+        isSaving.value = false;
+    }
 }
 
 async function confirmAndDelete() {
@@ -132,9 +203,5 @@ async function confirmAndDelete() {
             isDeleting.value = false;
         }
     }
-}
-
-function openDoctorDialog() {
-    isDoctorDialogVisible.value = true;
 }
 </script>
