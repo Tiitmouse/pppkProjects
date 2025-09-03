@@ -14,7 +14,6 @@ type UserDto struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 	OIB       string `json:"oib"`
-	Residence string `json:"residence"`
 	BirthDate string `json:"birthDate"`
 	Email     string `json:"email"`
 	Role      string `json:"role"`

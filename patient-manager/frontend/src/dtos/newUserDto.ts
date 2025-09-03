@@ -5,7 +5,7 @@ export interface NewUserDto {
     firstName: string;
     lastName: string;
     oib: string;
-    residence: string;
+    gender: string;
     birthDate: string; //YYYY-MM-DD
     email: string;
     password: string;
@@ -20,7 +20,7 @@ export function createNewUserDto(
         firstName: user.firstName,
         lastName: user.lastName,
         oib: user.oib,
-        residence: user.residence,
+        gender: user.gender,
         birthDate: formatDate(user.birthDate),
         email: user.email,
         password: password,

@@ -14,11 +14,10 @@ type NewUserDto struct {
 	FirstName string `json:"firstName" binding:"required,min=2,max=100"`
 	LastName  string `json:"lastName" binding:"required,min=2,max=100"`
 	OIB       string `json:"oib" binding:"required,len=11"`
-	Residence string `json:"residence" binding:"required,max=255"`
 	BirthDate string `json:"birthDate" binding:"required,datetime=2006-01-02"`
 	Email     string `json:"email" binding:"required,email"`
-	Password  string `json:"password" binding:"required,min=6"`
-	Role      string `json:"role" binding:"required,oneof=hak mupadmin osoba firma policija superadmin"`
+	Password  string `json:"password"`
+	Role      string `json:"role" binding:"required,oneof=doctor patient superadmin"`
 }
 
 // ToModel create a model from a dto
@@ -42,6 +41,7 @@ func (dto *NewUserDto) ToModel() (*model.User, error) {
 		LastName:  dto.LastName,
 		Email:     dto.Email,
 		Role:      role,
+		OIB:       dto.OIB,
 	}, nil
 }
 

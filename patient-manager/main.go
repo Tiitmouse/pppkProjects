@@ -3,7 +3,6 @@ package main
 import (
 	"PatientManager/app"
 	"PatientManager/config"
-	"PatientManager/controller"
 	"PatientManager/httpServer"
 	"PatientManager/repository"
 	"PatientManager/service"
@@ -12,14 +11,14 @@ import (
 	"go.uber.org/zap"
 )
 
-// @title           PatientManager API
-// @version         1.0
-// @description     This is the API for the PatientManager service.
-// @host            localhost:8080
-// @BasePath        /api
-// @securityDefinitions.apikey BearerAuth
-// @in header
-// @name Authorization
+// @title						PatientManager API
+// @version					1.0
+// @description				This is the API for the PatientManager service.
+// @host						localhost:8080
+// @BasePath					/api
+// @securityDefinitions.apikey	BearerAuth
+// @in							header
+// @name						Authorization
 func main() {
 	err := config.LoadConfig()
 	if err != nil {
@@ -33,13 +32,10 @@ func main() {
 	// Provide User and Login dependencies
 	app.Provide(service.NewUserCrudService)
 	app.Provide(service.NewLoginService)
-	app.Provide(controller.NewUserController)
-	app.Provide(controller.NewLoginController)
 
 	// Provide Patient dependencies
 	app.Provide(repository.NewPatientRepository)
 	app.Provide(service.NewPatientService)
-	app.Provide(controller.NewPatientController)
 
 	zap.S().Infof("Database: http://localhost:8080")
 

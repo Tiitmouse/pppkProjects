@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"PatientManager/app"
 	"PatientManager/dto"
 	"PatientManager/service"
 	"net/http"
@@ -10,11 +11,19 @@ import (
 )
 
 type PatientController struct {
-	patientService service.PatientService
+	patientService service.IPatientService
 }
 
-func NewPatientController(patientService service.PatientService) *PatientController {
-	return &PatientController{patientService: patientService}
+func NewPatientController() *PatientController {
+	var controller *PatientController
+
+	app.Invoke(func(service service.IPatientService) {
+		controller = &PatientController{
+			patientService: service,
+		}
+	})
+
+	return controller
 }
 
 func (c *PatientController) RegisterEndpoints(router *gin.RouterGroup) {
@@ -29,13 +38,14 @@ func (c *PatientController) RegisterEndpoints(router *gin.RouterGroup) {
 }
 
 // GetAllPatients godoc
-// @Summary      List all patients
-// @Description  get all patients
-// @Tags         patients
-// @Produce      json
-// @Success      200  {array}   dto.PatientDto
-// @Failure      500  {object}  gin.H
-// @Router       /patients [get]
+//
+//	@Summary		List all patients
+//	@Description	get all patients
+//	@Tags			patients
+//	@Produce		json
+//	@Success		200	{array}		dto.PatientDto
+//	@Failure		500	{object}	gin.H
+//	@Router			/patients [get]
 func (c *PatientController) GetAllPatients(ctx *gin.Context) {
 	patients, err := c.patientService.GetAllPatients()
 	if err != nil {
@@ -46,15 +56,16 @@ func (c *PatientController) GetAllPatients(ctx *gin.Context) {
 }
 
 // GetPatientById godoc
-// @Summary      Get a patient by ID
-// @Description  get patient by ID
-// @Tags         patients
-// @Produce      json
-// @Param        id   path      int  true  "Patient ID"
-// @Success      200  {object}  dto.PatientDto
-// @Failure      400  {object}  gin.H
-// @Failure      404  {object}  gin.H
-// @Router       /patients/{id} [get]
+//
+//	@Summary		Get a patient by ID
+//	@Description	get patient by ID
+//	@Tags			patients
+//	@Produce		json
+//	@Param			id	path		int	true	"Patient ID"
+//	@Success		200	{object}	dto.PatientDto
+//	@Failure		400	{object}	gin.H
+//	@Failure		404	{object}	gin.H
+//	@Router			/patients/{id} [get]
 func (c *PatientController) GetPatientById(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
@@ -72,16 +83,17 @@ func (c *PatientController) GetPatientById(ctx *gin.Context) {
 }
 
 // CreatePatient godoc
-// @Summary      Create a new patient
-// @Description  add a new patient to the database
-// @Tags         patients
-// @Accept       json
-// @Produce      json
-// @Param        patient  body      dto.NewPatientDto  true  "New Patient"
-// @Success      201      {object}  dto.PatientDto
-// @Failure      400      {object}  gin.H
-// @Failure      500      {object}  gin.H
-// @Router       /patients [post]
+//
+//	@Summary		Create a new patient
+//	@Description	add a new patient to the database
+//	@Tags			patients
+//	@Accept			json
+//	@Produce		json
+//	@Param			patient	body		dto.NewPatientDto	true	"New Patient"
+//	@Success		201		{object}	dto.PatientDto
+//	@Failure		400		{object}	gin.H
+//	@Failure		500		{object}	gin.H
+//	@Router			/patients [post]
 func (c *PatientController) CreatePatient(ctx *gin.Context) {
 	var newPatient dto.NewPatientDto
 	if err := ctx.ShouldBindJSON(&newPatient); err != nil {
@@ -99,17 +111,18 @@ func (c *PatientController) CreatePatient(ctx *gin.Context) {
 }
 
 // UpdatePatient godoc
-// @Summary      Update an existing patient
-// @Description  update patient details by ID
-// @Tags         patients
-// @Accept       json
-// @Produce      json
-// @Param        id       path      int            true  "Patient ID"
-// @Param        patient  body      dto.PatientDto  true  "Patient Data"
-// @Success      200      {object}  dto.PatientDto
-// @Failure      400      {object}  gin.H
-// @Failure      500      {object}  gin.H
-// @Router       /patients/{id} [put]
+//
+//	@Summary		Update an existing patient
+//	@Description	update patient details by ID
+//	@Tags			patients
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int				true	"Patient ID"
+//	@Param			patient	body		dto.PatientDto	true	"Patient Data"
+//	@Success		200		{object}	dto.PatientDto
+//	@Failure		400		{object}	gin.H
+//	@Failure		500		{object}	gin.H
+//	@Router			/patients/{id} [put]
 func (c *PatientController) UpdatePatient(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
@@ -133,14 +146,15 @@ func (c *PatientController) UpdatePatient(ctx *gin.Context) {
 }
 
 // DeletePatient godoc
-// @Summary      Delete a patient
-// @Description  delete a patient by ID
-// @Tags         patients
-// @Param        id   path      int  true  "Patient ID"
-// @Success      204  {object}  nil
-// @Failure      400  {object}  gin.H
-// @Failure      500  {object}  gin.H
-// @Router       /patients/{id} [delete]
+//
+//	@Summary		Delete a patient
+//	@Description	delete a patient by ID
+//	@Tags			patients
+//	@Param			id	path		int	true	"Patient ID"
+//	@Success		204	{object}	nil
+//	@Failure		400	{object}	gin.H
+//	@Failure		500	{object}	gin.H
+//	@Router			/patients/{id} [delete]
 func (c *PatientController) DeletePatient(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {

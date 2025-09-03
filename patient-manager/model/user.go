@@ -38,6 +38,7 @@ type User struct {
 	Uuid         uuid.UUID `gorm:"type:uuid;unique;not null"`
 	FirstName    string    `gorm:"type:varchar(100);not null"`
 	LastName     string    `gorm:"type:varchar(100);not null"`
+	OIB          string    `gorm:"type:char(11);not null"`
 	Email        string    `gorm:"type:varchar(100);unique;not null"`
 	PasswordHash string    `gorm:"type:varchar(255);not null"`
 	Role         UserRole  `gorm:"type:varchar(20);not null"`

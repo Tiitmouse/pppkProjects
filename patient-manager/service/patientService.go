@@ -1,6 +1,7 @@
 package service
 
 import (
+	"PatientManager/app"
 	"PatientManager/dto"
 	"PatientManager/model"
 	"PatientManager/repository"
@@ -10,8 +11,22 @@ type PatientService struct {
 	patientRepository repository.PatientRepository
 }
 
-func NewPatientService(patientRepository repository.PatientRepository) *PatientService {
-	return &PatientService{patientRepository: patientRepository}
+type IPatientService interface {
+	GetAllPatients() ([]dto.PatientDto, error)
+	GetPatientById(id uint) (dto.PatientDto, error)
+	CreatePatient(newPatient dto.NewPatientDto) (dto.PatientDto, error)
+	UpdatePatient(id uint, patientDto dto.PatientDto) (dto.PatientDto, error)
+	DeletePatient(id uint) error
+}
+
+func NewPatientService() IPatientService {
+	var service *PatientService
+	app.Invoke(func(repo repository.PatientRepository) {
+		service = &PatientService{
+			patientRepository: repo,
+		}
+	})
+	return service
 }
 
 func (s *PatientService) GetAllPatients() ([]dto.PatientDto, error) {

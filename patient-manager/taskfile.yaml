@@ -27,7 +27,7 @@ tasks:
 
   dev:
     desc: "Starts both Server (task dev) and WebApp (npm run dev) in parallel"
-    deps: [generate-swagger, start-db]
+    deps: [start-db]
     cmds:
       - defer: { task: stop-db }
       - task: dev-deps

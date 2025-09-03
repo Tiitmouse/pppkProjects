@@ -20,15 +20,6 @@
         Log In
       </v-btn>
 
-      <v-btn class="mt-4" color="grey" variant="text" size="small" block :loading="isPinging" :disabled="isPinging"
-        @click="testConnection">
-        {{ isPinging ? 'Testing...' : 'Test Connection' }}
-      </v-btn>
-
-      <v-alert v-if="pingResult" :type="pingSuccess ? 'success' : 'error'" variant="tonal" class="mt-2"
-        density="compact">
-        {{ pingResult }}
-      </v-alert>
     </v-card>
   </div>
 </template>
@@ -38,7 +29,6 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useSnackbar } from './SnackbarProvider.vue';
-import axiosInstance from '@/services/axios';
 import { getLoggedInUser } from '@/services/userService';
 import { login } from '@/services/authService';
 
@@ -51,9 +41,6 @@ const password = ref('');
 const emailError = ref('');
 const passwordError = ref('');
 const visible = ref(false);
-const isPinging = ref(false);
-const pingResult = ref('');
-const pingSuccess = ref(false);
 
 const loading = ref(false)
 
@@ -94,21 +81,5 @@ async function handleLogin() {
   }
   router.push('/');
 }
-
-const testConnection = async () => {
-  isPinging.value = true;
-  pingResult.value = '';
-
-  try {
-    await axiosInstance.get('/test/');
-    pingResult.value = 'Connection successful';
-    pingSuccess.value = true;
-  } catch (error) {
-    pingResult.value = 'Connection failed: ' + (error as any).message;
-    pingSuccess.value = false;
-  } finally {
-    isPinging.value = false;
-  }
-};
 
 </script>

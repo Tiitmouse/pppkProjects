@@ -40,11 +40,6 @@ export interface NavigationLink {
           AllowRoles: [UserRole.SuperAdmin, UserRole.Doctor],
           Route: '/new-user'
         },
-        {
-          Name: "Users",
-          AllowRoles: [UserRole.SuperAdmin],
-          Route: '/users'
-        },
       ]
     },
   ]);

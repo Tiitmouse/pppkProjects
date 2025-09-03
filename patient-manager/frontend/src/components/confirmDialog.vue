@@ -14,9 +14,9 @@
             <v-card-actions class="pt-3">
                 <v-spacer></v-spacer>
                 <v-btn v-if="!options.noCancel" color="error" variant="elevated" @click="cancel">
-                    odustani
+                    quit
                 </v-btn>
-                <v-btn color="primary" variant="elevated" @click="agree">potvrdi</v-btn>
+                <v-btn color="primary" variant="elevated" @click="agree">ok</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>

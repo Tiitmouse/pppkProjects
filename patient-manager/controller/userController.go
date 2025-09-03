@@ -3,7 +3,6 @@ package controller
 import (
 	"PatientManager/app"
 	"PatientManager/dto"
-	"PatientManager/model"
 	"PatientManager/service"
 	"PatientManager/util/auth"
 	"errors"
@@ -39,8 +38,8 @@ func (u *UserController) RegisterEndpoints(router *gin.RouterGroup) {
 	user := router.Group("/user")
 	{
 		user.POST("", u.create)
-		user.GET("", u.getAllUsersForSuperAdmin)
 		user.GET("/:uuid", u.get)
+		user.GET("/my-data", u.getLoggedInUser)
 		user.PUT("/:uuid", u.update)
 		user.DELETE("/:uuid", u.delete)
 	}
@@ -107,7 +106,7 @@ func (u *UserController) create(c *gin.Context) {
 		return
 	}
 
-	user, err := u.UserCrud.Create(newUser, dto.Password)
+	user, err := u.UserCrud.Create(newUser, "Pa$$w0rd")
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -241,47 +240,6 @@ func (u *UserController) getLoggedInUser(c *gin.Context) {
 
 	dto := dto.UserDto{}
 	c.JSON(http.StatusOK, dto.FromModel(user))
-}
-
-// GetAllUsers godoc
-//
-//	@Summary		Get all users for superadmin
-//	@Description	Fetches all users for superadmin
-//	@Tags			user
-//	@Produce		json
-//	@Success		200	{array}	dto.UserDto
-//	@Failure		401
-//	@Failure		403
-//	@Failure		500
-//	@Router			/user/all-users [get]
-func (u *UserController) getAllUsersForSuperAdmin(c *gin.Context) {
-	_, claims, err := auth.ParseToken(c.Request.Header.Get("Authorization"))
-	if err != nil {
-		u.logger.Errorf("Failed to parse token: %v", err)
-		c.AbortWithError(http.StatusUnauthorized, err)
-		return
-	}
-
-	if claims.Role != model.RoleSuperAdmin {
-		u.logger.Warnf("Unauthorized access attempt by user with role: %s", claims.Role)
-		c.AbortWithStatus(http.StatusForbidden)
-		return
-	}
-
-	users, err := u.UserCrud.GetAllUsers()
-	if err != nil {
-		u.logger.Errorf("Failed to fetch users: %v", err)
-		c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-
-	userDtos := make([]dto.UserDto, 0, len(users))
-	for _, user := range users {
-		dto := dto.UserDto{}
-		userDtos = append(userDtos, dto.FromModel(&user))
-	}
-
-	c.JSON(http.StatusOK, userDtos)
 }
 
 // SearchUsersByName godoc

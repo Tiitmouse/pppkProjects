@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"PatientManager/app"
 	"PatientManager/model"
 
 	"gorm.io/gorm"
@@ -10,8 +11,14 @@ type PatientRepository struct {
 	db *gorm.DB
 }
 
-func NewPatientRepository(db *gorm.DB) *PatientRepository {
-	return &PatientRepository{db: db}
+func NewPatientRepository() PatientRepository {
+	var repo PatientRepository
+	app.Invoke(func(db *gorm.DB) {
+		repo = PatientRepository{
+			db: db,
+		}
+	})
+	return repo
 }
 
 func (r *PatientRepository) FindAll() ([]model.Patient, error) {

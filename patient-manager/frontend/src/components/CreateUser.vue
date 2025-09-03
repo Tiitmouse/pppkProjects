@@ -1,181 +1,94 @@
 <template>
-  <div>
-    <v-container class="d-flex align-center justify-center">
-      <v-card width="800" rounded="lg" elevation="3" class="pa-8 ma-8" variant="tonal">
-        <div class="d-flex align-center justify-space-between pb-3">
-          <v-card-title class="text-h5 pa-0">Create new</v-card-title>
-          <v-radio-group v-model="selectedRole" inline hide-details class="mt-0 pt-0">
-            <v-radio label="Doctor" value="Doctor"></v-radio>
-            <v-radio label="Patient" value="Patient"></v-radio>
+  <v-container>
+    <v-card max-width="800" class="mx-auto">
+      <v-card-title class="text-h5">Create New</v-card-title>
+      <v-card-text>
+        <v-form ref="form" v-model="valid">
+          <v-radio-group v-model="roleSelection" inline label="User Type">
+            <v-radio label="Doctor" value="doctor"></v-radio>
+            <v-radio label="Patient" value="patient"></v-radio>
           </v-radio-group>
-        </div>
 
-        <!-- Common Fields for Both Roles -->
-        <v-text-field v-model="user.firstName" :error-messages="errors.firstName" label="First Name" variant="outlined"
-          density="compact" @input="updateErrors('firstName', '')"></v-text-field>
-
-        <v-text-field v-model="user.lastName" :error-messages="errors.lastName" label="Last Name" variant="outlined"
-          density="compact" class="mt-2" @input="updateErrors('lastName', '')"></v-text-field>
-
-        <v-text-field v-model="user.email" :error-messages="errors.email" label="Email Address" type="email"
-          variant="outlined" density="compact" class="mt-2" @input="updateErrors('email', '')"
-          autocomplete="off"></v-text-field>
-
-        <v-text-field v-model="password" :error-messages="errors.password" label="Password" type="password"
-          variant="outlined" density="compact" class="mt-2" @input="updateErrors('password', '')"
-          autocomplete="off"></v-text-field>
-
-        <!-- Patient-Specific Fields -->
-        <div v-if="selectedRole === 'Patient'">
-          <v-text-field v-model="user.oib" :error-messages="errors.oib" label="OIB" variant="outlined" density="compact"
-            class="mt-2" @input="updateErrors('oib', '')"></v-text-field>
-
-          <v-text-field v-model="user.birthDate" :error-messages="errors.birthDate" label="Birth Date" type="date"
-            variant="outlined" density="compact" @input="updateErrors('birthDate', '')"></v-text-field>
-
-          <div class="d-flex align-center">
-            <div class="v-label text-body-2 text-medium-emphasis mr-4">Gender</div>
-            <v-radio-group v-model="user.gender" inline :error-messages="errors.gender"
-              @change="updateErrors('gender', '')" hide-details="auto">
-              <v-radio label="F" value="F"></v-radio>
-              <v-radio label="M" value="M"></v-radio>
-            </v-radio-group>
+          <div v-if="roleSelection === 'doctor'">
+            <v-text-field v-model="doctorForm.firstName" label="First Name" :rules="[rules.required]"></v-text-field>
+            <v-text-field v-model="doctorForm.lastName" label="Last Name" :rules="[rules.required]"></v-text-field>
+            <v-text-field v-model="doctorForm.oib" label="OIB" :rules="[rules.required]"></v-text-field>
+            <v-text-field v-model="doctorForm.birthDate" label="Birth Date" type="date" :rules="[rules.required]"></v-text-field>
+            <v-text-field v-model="doctorForm.email" label="E-mail" :rules="[rules.required, rules.email]"></v-text-field>
           </div>
 
-
-        </div>
-
-        <div class="d-flex gap-4 mt-6">
-          <v-btn color="primary" size="large" block :loading="isSubmitting" :disabled="isSubmitting"
-            @click="submitForm">
-            {{ isSubmitting ? 'Creating...' : 'Create User' }}
-          </v-btn>
-
-        </div>
-
-        <v-alert v-if="errorMessage" type="error" variant="tonal" class="mt-6" closable
-          @click:close="errorMessage = ''">
-          {{ errorMessage }}
-        </v-alert>
-
-        <v-alert v-if="successMessage" type="success" variant="tonal" class="mt-6" closable
-          @click:close="successMessage = ''">
-          {{ successMessage }}
-        </v-alert>
-
-      </v-card>
-    </v-container>
-  </div>
+          <div v-if="roleSelection === 'patient'">
+            <v-text-field v-model="patientForm.firstName" label="First Name" :rules="[rules.required]"></v-text-field>
+            <v-text-field v-model="patientForm.lastName" label="Last Name" :rules="[rules.required]"></v-text-field>
+            <v-text-field v-model="patientForm.oib" label="OIB" :rules="[rules.required]"></v-text-field>
+            <v-text-field v-model="patientForm.gender" label="Gender" :rules="[rules.required]"></v-text-field>
+            <v-text-field v-model="patientForm.birthDate" label="Birth Date" type="date" :rules="[rules.required]"></v-text-field>
+          </div>
+        </v-form>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn color="blue-darken-1" variant="text" @click="cancel">Cancel</v-btn>
+        <v-btn color="blue-darken-1" :disabled="!valid" @click="submit">Create</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-container>
 </template>
 
-<script lang="ts" setup>
-import { ref, reactive, watch } from 'vue';
+<script setup lang="ts">
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import * as userService from '@/services/userService';
+import * as patientService from '@/services/patientService';
 import type { User } from '@/models/user';
+import type { NewPatientDto } from '@/dtos/patientDto';
 import { UserRole } from '@/enums/userRole';
-import type { FormErrors } from '@/models/formErrors';
-import { isOibValid } from '@/utils/validateOIB';
-import { isEmailValid } from '@/utils/validateEmail';
-import { createUser } from '@/services/userService';
 
-const createInitialUser = (): User => ({
+const router = useRouter();
+const valid = ref(false);
+const roleSelection = ref('doctor');
+const today = new Date().toISOString().substr(0, 10);
+
+const doctorForm = ref<User>({
   uuid: '',
   firstName: '',
   lastName: '',
   oib: '',
-  gender: '',
-  birthDate: '',
+  birthDate: today,
   email: '',
-  role: UserRole.Doctor
+  gender: '',
+  role: UserRole.Doctor,
 });
 
-const selectedRole = ref<UserRole>(UserRole.Doctor);
-
-const user = ref<User>(createInitialUser());
 const password = ref('');
 
-const isSubmitting = ref(false);
-const errorMessage = ref('');
-const successMessage = ref('');
-
-const errors = reactive<FormErrors>({
+const patientForm = ref<NewPatientDto>({
   firstName: '',
   lastName: '',
-  email: '',
-  password: '',
   oib: '',
+  birthDate: today,
   gender: '',
-  birthDate: '',
 });
 
-const updateErrors = (field: keyof FormErrors, value: string) => {
-  if (field in errors) {
-    errors[field] = value;
-  }
+const rules = {
+  required: (v: string) => !!v || 'This field is required.',
+  email: (v: string) => /.+@.+\..+/.test(v) || 'E-mail must be valid.',
 };
 
-const validateForm = (): boolean => {
-  Object.keys(errors).forEach(key => { errors[key as keyof FormErrors] = '' });
-  let isValid = true;
-
-  // Common validations
-  if (!user.value.firstName.trim()) { errors.firstName = 'First name is required'; isValid = false; }
-  if (!user.value.lastName.trim()) { errors.lastName = 'Last name is required'; isValid = false; }
-  if (!user.value.email.trim()) { errors.email = 'Email is required'; isValid = false; }
-  else if (!isEmailValid(user.value.email)) { errors.email = 'Enter a valid email address'; isValid = false; }
-  if (!password.value) { errors.password = 'Password is required'; isValid = false; }
-  else if (password.value.length < 6) { errors.password = 'Password must be at least 6 characters'; isValid = false; }
-
-  // Patient-specific validations
-  if (selectedRole.value === UserRole.Patient) {
-    if (!user.value.oib.trim()) { errors.oib = 'OIB is required'; isValid = false; }
-    else if (!isOibValid(user.value.oib)) { errors.oib = 'Invalid OIB'; isValid = false; }
-    if (!user.value.gender) { errors.gender = 'Gender is required'; isValid = false; }
-    if (!user.value.birthDate) { errors.birthDate = 'Birth date is required'; isValid = false; }
-  }
-
-  return isValid;
+const cancel = () => {
+  router.push('/users');
 };
 
-const submitForm = async () => {
-  errorMessage.value = '';
-  successMessage.value = '';
-
-  if (!validateForm()) {
-    return;
-  }
-
-  isSubmitting.value = true;
+const submit = async () => {
   try {
-    user.value.role = selectedRole.value;
-
-    const createdUser = await createUser(user.value, password.value);
-
-    if (createdUser) {
-      successMessage.value = `User ${createdUser.email} created successfully!`;
-      resetForm();
+    if (roleSelection.value === 'doctor') {
+      await userService.createUser(doctorForm.value, password.value);
+    } else {
+      await patientService.createPatient(patientForm.value);
     }
-  } catch (error: any) {
-    console.error('Error creating user:', error);
-    errorMessage.value = error.response?.data?.message || 'Failed to create user. Please try again.';
-  } finally {
-    isSubmitting.value = false;
+    router.push('/users');
+  } catch (error) {
+    console.error('Failed to create:', error);
   }
 };
-
-const resetForm = () => {
-  user.value = createInitialUser();
-  password.value = '';
-  Object.keys(errors).forEach(key => { errors[key as keyof FormErrors] = '' });
-};
-
-watch(selectedRole, (newRole) => {
-  resetForm();
-  user.value.role = newRole;
-});
 </script>
-
-<style lang="css" scoped>
-.gap-4 {
-  gap: 1rem;
-}
-</style>

@@ -78,29 +78,3 @@ func GenerateTokens(user *model.User) (string, string, error) {
 
 	return accessTokenString, refreshTokenString, nil
 }
-
-func GenerateDeviceToken(user *model.User) (string, error) {
-	if user == nil {
-		return "", cerror.ErrUserIsNil
-	}
-
-	deviceTokenClaims := &Claims{
-		Email: user.Email,
-		Uuid:  user.Uuid.String(),
-		Role:  user.Role,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(deviceTokenDuration)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-		},
-	}
-
-	deviceToken := jwt.NewWithClaims(jwt.SigningMethodHS256, deviceTokenClaims)
-
-	deviceTokenString, err := deviceToken.SignedString([]byte(config.AppConfig.AccessKey))
-	if err != nil {
-		zap.S().Debugf("Failed to generate device token err = %+v", err)
-		return "", err
-	}
-
-	return deviceTokenString, nil
-}
