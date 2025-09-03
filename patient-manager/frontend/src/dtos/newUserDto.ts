@@ -27,3 +27,4 @@ export function createNewUserDto(
         role: user.role
     };
 }
+

@@ -1,4 +1,7 @@
 import type { PatientDto, NewPatientDto } from '@/dtos/patientDto';
+import { createNewPatientDto } from '@/dtos/patientDto';
+
+import { formatDate } from '@/utils/formatDate';
 import axios from './axios';
 
 const BASE_URL = '/patients';
@@ -14,7 +17,10 @@ export async function getPatientById(id: number): Promise<PatientDto> {
 }
 
 export async function createPatient(newPatient: NewPatientDto): Promise<PatientDto> {
-  const response = await axios.post<PatientDto>(BASE_URL, newPatient);
+  const patientDto = createNewPatientDto(newPatient);
+  patientDto.birthDate = formatDate(patientDto.birthDate);
+  console.log(patientDto)
+  const response = await axios.post<PatientDto>(BASE_URL, patientDto);
   return response.data;
 }
 

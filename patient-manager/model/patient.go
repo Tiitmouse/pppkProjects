@@ -17,7 +17,7 @@ type Patient struct {
 	Gender          string    `gorm:"type:char(1);not null"`
 	MedicalRecordID uint      `gorm:"type:uint;not null"`
 	MedicalRecord   MedicalRecord
-	DoctorID        uint `gorm:"type:uint;not null"`
+	DoctorID        *uint `gorm:"type:uint;null"`
 	Doctor          User
 }
 

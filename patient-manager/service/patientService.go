@@ -5,6 +5,12 @@ import (
 	"PatientManager/dto"
 	"PatientManager/model"
 	"PatientManager/repository"
+	"PatientManager/util/cerror"
+	"PatientManager/util/format"
+	"time"
+
+	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 type PatientService struct {
@@ -65,11 +71,18 @@ func (s *PatientService) GetPatientById(id uint) (dto.PatientDto, error) {
 }
 
 func (s *PatientService) CreatePatient(newPatient dto.NewPatientDto) (dto.PatientDto, error) {
+	bod, err := time.Parse(format.DateFormat, newPatient.BirthDate)
+	if err != nil {
+		zap.S().Errorf("Failed to parse BirthDate = %s, err = %+v", newPatient.BirthDate, err)
+		return dto.PatientDto{}, cerror.ErrBadDateFormat
+	}
+
 	patient := model.Patient{
+		Uuid:      uuid.New(),
 		FirstName: newPatient.FirstName,
 		LastName:  newPatient.LastName,
 		OIB:       newPatient.OIB,
-		BirthDate: newPatient.BirthDate,
+		BirthDate: bod,
 		Gender:    newPatient.Gender,
 	}
 

@@ -13,16 +13,20 @@
             <v-text-field v-model="doctorForm.firstName" label="First Name" :rules="[rules.required]"></v-text-field>
             <v-text-field v-model="doctorForm.lastName" label="Last Name" :rules="[rules.required]"></v-text-field>
             <v-text-field v-model="doctorForm.oib" label="OIB" :rules="[rules.required]"></v-text-field>
-            <v-text-field v-model="doctorForm.birthDate" label="Birth Date" type="date" :rules="[rules.required]"></v-text-field>
-            <v-text-field v-model="doctorForm.email" label="E-mail" :rules="[rules.required, rules.email]"></v-text-field>
+            <v-text-field v-model="doctorForm.email" label="E-mail"
+              :rules="[rules.required, rules.email]"></v-text-field>
           </div>
 
           <div v-if="roleSelection === 'patient'">
             <v-text-field v-model="patientForm.firstName" label="First Name" :rules="[rules.required]"></v-text-field>
             <v-text-field v-model="patientForm.lastName" label="Last Name" :rules="[rules.required]"></v-text-field>
             <v-text-field v-model="patientForm.oib" label="OIB" :rules="[rules.required]"></v-text-field>
-            <v-text-field v-model="patientForm.gender" label="Gender" :rules="[rules.required]"></v-text-field>
-            <v-text-field v-model="patientForm.birthDate" label="Birth Date" type="date" :rules="[rules.required]"></v-text-field>
+            <v-text-field v-model="patientForm.birthDate" label="Birth Date" type="date"
+              :rules="[rules.required]"></v-text-field>
+            <v-radio-group v-model="patientForm.gender" label="Gender" :rules="[rules.required]" inline>
+              <v-radio label="Male" value="m"></v-radio>
+              <v-radio label="Female" value="f"></v-radio>
+            </v-radio-group>
           </div>
         </v-form>
       </v-card-text>
@@ -68,6 +72,8 @@ const patientForm = ref<NewPatientDto>({
   oib: '',
   birthDate: today,
   gender: '',
+  uuid: '',
+  role: UserRole.Patient
 });
 
 const rules = {

@@ -114,9 +114,7 @@ func (u *UserController) create(c *gin.Context) {
 
 	// Log the response for debugging
 	responseDto := dto.FromModel(user)
-	tokenValue := ""
 	u.logger.Infof("Response DTO: %+v", responseDto)
-	u.logger.Infof("Response PoliceToken: %q", tokenValue)
 
 	c.JSON(http.StatusCreated, responseDto)
 }

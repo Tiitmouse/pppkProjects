@@ -12,9 +12,9 @@ type PatientDto struct {
 }
 
 type NewPatientDto struct {
-	FirstName string    `json:"firstName" binding:"required"`
-	LastName  string    `json:"lastName" binding:"required"`
-	OIB       string    `json:"oib" binding:"required"`
-	BirthDate time.Time `json:"birthDate" binding:"required"`
-	Gender    string    `json:"gender" binding:"required"`
+	FirstName string `json:"firstName" binding:"required"`
+	LastName  string `json:"lastName" binding:"required"`
+	OIB       string `json:"oib" binding:"required"`
+	BirthDate string `json:"birthDate" binding:"required"`
+	Gender    string `json:"gender" binding:"required"`
 }
