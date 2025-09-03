@@ -17,13 +17,37 @@ export const routes = [
     meta: {
       layout: 'loginLayout',
     },
+  },  
+  {
+    path: "/patient-list",
+    name: "patient-list",
+    component: () => import('@/pages/patient-list.vue'),
+    meta: {
+      layout: 'default',
+    },
+  },  
+  {
+    path: "/checkup",
+    name: "checkup",
+    component: () => import('@/pages/checkup.vue'),
+    meta: {
+      layout: 'default',
+    },
+  },
+    {
+    path: "/perscription",
+    name: "perscription",
+    component: () => import('@/pages/perscription.vue'),
+    meta: {
+      layout: 'default',
+    },
   },
   {
     path: '/new-user',
     name: 'new-user',
     component: () => import(/* @vite-ignore */ '@/pages/new-user.vue'),
     meta: {
-      allowedRoles: [UserRole.SuperAdmin],
+      allowedRoles: [UserRole.SuperAdmin, UserRole.Doctor],
       layout: 'default',
       breadcrumbName: "New user"
     },
