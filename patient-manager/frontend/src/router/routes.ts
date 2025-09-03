@@ -27,6 +27,14 @@ export const routes = [
     },
   },  
   {
+    path: "/patient-details",
+    name: "patient-details",
+    component: () => import('@/pages/patient-details.vue'),
+    meta: {
+      layout: 'default',
+    },
+  },  
+  {
     path: "/checkup",
     name: "checkup",
     component: () => import('@/pages/checkup.vue'),
