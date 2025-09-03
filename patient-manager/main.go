@@ -36,6 +36,7 @@ func main() {
 	// Provide Patient dependencies
 	app.Provide(repository.NewPatientRepository)
 	app.Provide(service.NewPatientService)
+	app.Provide(service.NewMedicalRecordService)
 
 	zap.S().Infof("Database: http://localhost:8080")
 

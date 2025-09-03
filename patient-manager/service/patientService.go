@@ -14,7 +14,8 @@ import (
 )
 
 type PatientService struct {
-	patientRepository repository.PatientRepository
+	patientRepository    repository.PatientRepository
+	medicalRecordService IMedicalRecordService
 }
 
 type IPatientService interface {
@@ -27,9 +28,10 @@ type IPatientService interface {
 
 func NewPatientService() IPatientService {
 	var service *PatientService
-	app.Invoke(func(repo repository.PatientRepository) {
+	app.Invoke(func(repo repository.PatientRepository, mrservice IMedicalRecordService) {
 		service = &PatientService{
-			patientRepository: repo,
+			patientRepository:    repo,
+			medicalRecordService: mrservice,
 		}
 	})
 	return service
@@ -90,6 +92,19 @@ func (s *PatientService) CreatePatient(newPatient dto.NewPatientDto) (dto.Patien
 	if err != nil {
 		return dto.PatientDto{}, err
 	}
+
+	medicalRecord := model.MedicalRecord{
+		PatientID: createdPatient.ID,
+	}
+
+	createdmr, err := s.medicalRecordService.Create(&medicalRecord)
+	if err != nil {
+		return dto.PatientDto{}, err
+	}
+
+	createdPatient.MedicalRecordID = createdmr.ID
+
+	s.patientRepository.Update(createdPatient)
 
 	return dto.PatientDto{
 		ID:        createdPatient.ID,
