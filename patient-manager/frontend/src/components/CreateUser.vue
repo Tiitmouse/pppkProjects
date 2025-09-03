@@ -1,10 +1,15 @@
 <template>
   <v-container>
     <v-card max-width="800" class="mx-auto">
-      <v-card-title class="text-h5">Create New</v-card-title>
+      <v-card-title class="text-h5">Create new</v-card-title>
       <v-card-text>
         <v-form ref="form" v-model="valid">
-          <v-radio-group v-model="roleSelection" inline label="User Type">
+          <v-radio-group 
+            v-if="user?.role === UserRole.SuperAdmin" 
+            v-model="roleSelection" 
+            inline 
+            label="User Type"
+          >
             <v-radio label="Doctor" value="doctor"></v-radio>
             <v-radio label="Patient" value="patient"></v-radio>
           </v-radio-group>
@@ -40,17 +45,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import * as userService from '@/services/userService';
 import * as patientService from '@/services/patientService';
 import type { User } from '@/models/user';
 import type { NewPatientDto } from '@/dtos/patientDto';
 import { UserRole } from '@/enums/userRole';
+import { useAuthStore } from '@/stores/auth';
+
+const authStore = useAuthStore();
+const user = ref<User>();
 
 const router = useRouter();
 const valid = ref(false);
-const roleSelection = ref('doctor');
+const roleSelection = ref('');
 const today = new Date().toISOString().substr(0, 10);
 
 const doctorForm = ref<User>({
@@ -97,4 +106,17 @@ const submit = async () => {
     console.error('Failed to create:', error);
   }
 };
+
+
+onMounted(() => {
+  const currentUser = authStore.User;
+  user.value = currentUser;
+
+  if (currentUser?.role === UserRole.Doctor) {
+    roleSelection.value = 'patient';
+  } 
+  else if (currentUser?.role === UserRole.SuperAdmin) {
+    roleSelection.value = 'doctor';
+  }
+});
 </script>

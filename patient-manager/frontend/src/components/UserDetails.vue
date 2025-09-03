@@ -27,11 +27,9 @@
 import type { User } from '@/models/user';
 import { useAuthStore } from '@/stores/auth';
 import { onMounted } from 'vue';
-import { useSnackbar } from '@/components/SnackbarProvider.vue';
 
 const user = ref<User>()
 const authStore = useAuthStore();
-const snackbar = useSnackbar() 
 
 onMounted(async () => {
   const rez = authStore.User
