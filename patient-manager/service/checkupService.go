@@ -95,7 +95,7 @@ func (c *CheckupService) Update(checkupUuid uuid.UUID, checkupUpdateData *model.
 func (c *CheckupService) Delete(checkupUuid uuid.UUID) error {
 	c.logger.Infof("Attempting to delete checkup with UUID: %s", checkupUuid)
 
-	rez := c.db.Where("uuid = ?", checkupUuid).Delete(&model.MedicalRecord{})
+	rez := c.db.Where("uuid = ?", checkupUuid).Delete(&model.Checkup{})
 
 	if rez.Error != nil {
 		c.logger.Errorf("Error deleting checkup with UUID %s: %v", checkupUuid, rez.Error)

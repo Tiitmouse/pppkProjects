@@ -2,7 +2,7 @@
     <v-card elevation="2">
         <v-card-title class="d-flex align-center justify-space-between">
             <span>Checkups</span>
-            <v-btn @click="isCheckupDialogOpen = true" size="small" color="success" variant="elevated">
+            <v-btn @click="isCreateDialogOpen = true" size="small" color="success" variant="elevated">
                 <v-icon start>mdi-plus</v-icon>
                 Add
             </v-btn>
@@ -25,6 +25,13 @@
 
                 <template v-slot:item.checkupTime="{ item }">
                     {{ new Date(item.checkupDate).toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit' }) }}
+                </template>
+
+                <template v-slot:item.actions="{ item }">
+                    <div class="d-flex justify-end">
+                        <v-icon size="small" class="me-2" @click="openEditDialog(item)">mdi-pencil</v-icon>
+                        <v-icon size="small" @click="confirmAndDelete(item)">mdi-delete</v-icon>
+                    </div>
                 </template>
 
                 <template v-slot:group-header="{ item, columns, toggleGroup, isGroupOpen }">
@@ -52,41 +59,139 @@
 
     <CheckupDialog
         v-if="patient"
-        v-model="isCheckupDialogOpen"
+        v-model="isCreateDialogOpen"
         :patient="patient"
         @save="handleCreateCheckup"
     />
+
+    <v-dialog v-model="isEditDialogOpen" persistent max-width="600px">
+        <v-card v-if="selectedCheckup">
+            <v-card-title>
+                <span class="text-h5">Edit Checkup</span>
+            </v-card-title>
+            <v-card-text>
+                <v-form ref="editForm" v-model="isEditFormValid">
+                    <v-container>
+                        <v-row>
+                            <v-col cols="12" sm="6">
+                                <v-text-field
+                                    v-model="editFormData.checkupDate"
+                                    label="Checkup Date"
+                                    type="date"
+                                    :rules="[rules.required]"
+                                    required
+                                ></v-text-field>
+                            </v-col>
+                             <v-col cols="12" sm="6">
+                                <v-text-field
+                                    v-model="editFormData.checkupTime"
+                                    label="Checkup Time"
+                                    type="time"
+                                    :rules="[rules.required]"
+                                    required
+                                ></v-text-field>
+                            </v-col>
+                            <v-col cols="12">
+                                <v-select
+                                    v-model="editFormData.type"
+                                    :items="checkupTypes"
+                                    item-title="text"
+                                    item-value="value"
+                                    label="Checkup Type"
+                                    :rules="[rules.required]"
+                                    required
+                                ></v-select>
+                            </v-col>
+                             <v-col cols="12">
+                                <v-text-field
+                                    v-model.number="editFormData.IllnessID"
+                                    label="Associated Illness ID (Optional)"
+                                    type="number"
+                                    clearable
+                                ></v-text-field>
+                            </v-col>
+                        </v-row>
+                    </v-container>
+                </v-form>
+            </v-card-text>
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="error" variant="text" @click="isEditDialogOpen = false">Cancel</v-btn>
+                <v-btn color="primary" variant="elevated" @click="handleUpdateCheckup" :disabled="!isEditFormValid">Save</v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
+
+    <ConfirmDialogue ref="confirmDialog" />
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, reactive, computed } from 'vue';
 import type { PropType } from 'vue';
-import { getCheckupsForRecord, createCheckup } from '@/services/patientService';
+import { getCheckupsForRecord, createCheckup, updateCheckup, deleteCheckup } from '@/services/patientService';
 import type { Patient } from '@/stores/patientStore';
-import type { CheckupDto, CreateCheckupDto } from '@/dtos/checkupDto';
+import type { CheckupDto, CreateCheckupDto, UpdateCheckupDto } from '@/dtos/checkupDto';
 import { CheckupType } from '@/enums/checkupType';
 import CheckupDialog from '@/components/checkupDialog.vue';
+import ConfirmDialogue from '@/components/confirmDialog.vue';
 
 const props = defineProps({
     patient: {
         type: Object as PropType<Patient | null>,
         required: true,
-    }
+    },
+    isEditing: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const emit = defineEmits<{
-  (e: 'show-snackbar', text: string, color: 'success' | 'error'): void
+  (e: 'show-snackbar', text: string, color: 'success' | 'error' | 'info'): void
 }>();
 
 const checkups = ref<CheckupDto[]>([]);
 const isLoadingCheckups = ref(true);
-const isCheckupDialogOpen = ref(false);
+const isCreateDialogOpen = ref(false);
+const isEditDialogOpen = ref(false);
+const isEditFormValid = ref(false);
+const editForm = ref<any>(null);
+const selectedCheckup = ref<CheckupDto | null>(null);
+const confirmDialog = ref();
 
-const checkupHeaders = [
+const editFormData = reactive({
+    checkupDate: '',
+    checkupTime: '',
+    type: '' as CheckupType | undefined,
+    IllnessID: undefined as number | undefined,
+});
+
+const baseHeaders = [
     { title: 'Date', key: 'checkupDate', align: 'start' },
     { title: 'Time', key: 'checkupTime', align: 'start', sortable: false },
     { title: 'Associated Illness ID', key: 'IllnessID', align: 'end' },
-] as const;
+] as const; // Added 'as const' here
+
+const checkupHeaders = computed(() => {
+    if (props.isEditing) {
+        return [
+            ...baseHeaders,
+            { title: 'Actions', key: 'actions', sortable: false, align: 'end' },
+        ] as const; // And also here
+    }
+    return baseHeaders;
+});
+
+const checkupTypes = computed(() => {
+    return Object.entries(CheckupType).map(([key, value]) => ({
+        text: key.replace(/([A-Z])/g, ' $1').trim(),
+        value: value,
+    }));
+});
+
+const rules = {
+    required: (value: any) => !!value || 'This field is required.',
+};
 
 function getFullCheckupTypeName(typeValue: CheckupType): string {
     const typeKey = (Object.keys(CheckupType) as Array<keyof typeof CheckupType>).find(key => CheckupType[key] === typeValue);
@@ -114,11 +219,62 @@ async function handleCreateCheckup(checkupData: CreateCheckupDto) {
     try {
         await createCheckup(checkupData);
         emit('show-snackbar', 'Checkup added successfully.', 'success');
-        isCheckupDialogOpen.value = false;
+        isCreateDialogOpen.value = false;
         await loadCheckups();
     } catch (error) {
         console.error("Failed to add checkup:", error);
         emit('show-snackbar', 'Failed to add checkup.', 'error');
+    }
+}
+
+function openEditDialog(checkup: CheckupDto) {
+    selectedCheckup.value = checkup;
+    const date = new Date(checkup.checkupDate);
+    editFormData.checkupDate = date.toISOString().split('T')[0];
+    editFormData.checkupTime = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+    editFormData.type = checkup.type;
+    editFormData.IllnessID = checkup.IllnessID;
+    isEditDialogOpen.value = true;
+}
+
+async function handleUpdateCheckup() {
+    const { valid } = await editForm.value?.validate();
+    if (!valid || !selectedCheckup.value) return;
+
+    const combinedDateTime = `${editFormData.checkupDate}T${editFormData.checkupTime}`;
+    const payload: UpdateCheckupDto = {
+        checkupDate: new Date(combinedDateTime).toISOString(),
+        type: editFormData.type!,
+        IllnessID: editFormData.IllnessID,
+    };
+
+    try {
+        await updateCheckup(selectedCheckup.value.uuid, payload);
+        emit('show-snackbar', 'Checkup updated successfully.', 'success');
+        isEditDialogOpen.value = false;
+        await loadCheckups();
+    } catch (error) {
+        console.error("Failed to update checkup:", error);
+        emit('show-snackbar', 'Failed to update checkup.', 'error');
+    }
+}
+
+async function confirmAndDelete(checkup: CheckupDto) {
+    const isConfirmed = await confirmDialog.value.Open({
+        Title: 'Delete Checkup',
+        Message: `Are you sure you want to delete the checkup from ${new Date(checkup.checkupDate).toLocaleDateString()}?`,
+    });
+
+    if (isConfirmed) {
+        try {
+            console.log(checkup.uuid)
+            await deleteCheckup(checkup.uuid);
+            emit('show-snackbar', 'Checkup deleted successfully.', 'success');
+            await loadCheckups();
+        } catch (error) {
+            console.error("Failed to delete checkup:", error);
+            emit('show-snackbar', 'Failed to delete checkup.', 'error');
+        }
     }
 }
 

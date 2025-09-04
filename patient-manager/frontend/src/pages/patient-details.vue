@@ -76,6 +76,7 @@
                     <CheckupsList
                         v-if="patient"
                         :patient="patient"
+                        :is-editing="checkupsInEditMode"
                         @show-snackbar="showSnackbar"
                     />
                 </v-col>
@@ -145,6 +146,7 @@ const patient = ref<Patient | null>(null);
 const isLoading = ref(true);
 const isDeleting = ref(false);
 const isSaving = ref(false);
+const checkupsInEditMode = ref(false);
 
 const editOptionsDialog = ref();
 const confirmDialog = ref();
@@ -155,7 +157,7 @@ const mockDoctor = ref({ firstName: 'Ana', lastName: 'Anić' });
 const snackbar = reactive({
     visible: false,
     text: '',
-    color: 'success',
+    color: 'success' as 'success' | 'error' | 'info',
 });
 
 onMounted(() => {
@@ -167,7 +169,7 @@ onMounted(() => {
     isLoading.value = false;
 });
 
-function showSnackbar(text: string, color: 'success' | 'error') {
+function showSnackbar(text: string, color: 'success' | 'error' | 'info') {
     snackbar.text = text;
     snackbar.color = color;
     snackbar.visible = true;
@@ -181,11 +183,15 @@ function goBack() {
 async function openEditOptions() {
     const selectedChoice = await editOptionsDialog.value.Open({
         Title: 'What would you like to edit?',
-        Options: ['Patient Data', 'Prescriptions', 'Checks']
+        Options: ['Patient Data', 'Checkups', 'Prescriptions']
     });
 
     if (selectedChoice === 'Patient Data') {
         isEditDialogOpen.value = true;
+    } else if (selectedChoice === 'Checkups') {
+        checkupsInEditMode.value = !checkupsInEditMode.value;
+        const status = checkupsInEditMode.value ? 'enabled' : 'disabled';
+        showSnackbar(`Checkups editing ${status}.`, 'info');
     } else if (selectedChoice) {
         await confirmDialog.value.Open({
             Title: selectedChoice,

@@ -14,3 +14,9 @@ export interface CreateCheckupDto {
     medicalRecordUuid: string;
     IllnessID?: number;
 }
+
+export interface UpdateCheckupDto {
+    checkupDate: string;
+    type: CheckupType;
+    IllnessID?: number;
+}
