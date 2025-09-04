@@ -19,6 +19,9 @@ func Insert() {
 	if err := createSuperAdmin(); err != nil {
 		zap.S().Panicf("Failed to create superadmin, err = %+v\n", err)
 	}
+	if err := seedMedications(); err != nil {
+		zap.S().Panicf("Failed to seed medications, err = %+v\n", err)
+	}
 }
 
 // CreateSuperAdmin creates a SuperAdmin user if one doesn't already exist.
