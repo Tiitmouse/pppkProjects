@@ -7,11 +7,11 @@ import (
 )
 
 type MedicalRecordDto struct {
-	Uuid      uuid.UUID    `json:"uuid"`
-	PatientID uint         `json:"patientId"`
-	DoctorID  uint         `json:"doctorId"`
-	Checkups  []CheckupDto `json:"checkups"`
-	Illnesses []IllnessDto `json:"illnesses"`
+	Uuid      uuid.UUID        `json:"uuid"`
+	PatientID uint             `json:"patientId"`
+	DoctorID  uint             `json:"doctorId"`
+	Checkups  []CheckupDto     `json:"checkups"`
+	Illnesses []IllnessListDto `json:"illnesses"`
 }
 
 func (dto *MedicalRecordDto) FromModel(mr *model.MedicalRecord) *MedicalRecordDto {
@@ -20,9 +20,9 @@ func (dto *MedicalRecordDto) FromModel(mr *model.MedicalRecord) *MedicalRecordDt
 		checkups[i] = *(&CheckupDto{}).FromModel(&checkup)
 	}
 
-	illnesses := make([]IllnessDto, len(mr.Illnesses))
+	illnesses := make([]IllnessListDto, len(mr.Illnesses))
 	for i, illness := range mr.Illnesses {
-		illnesses[i] = *(&IllnessDto{}).FromModel(&illness)
+		illnesses[i] = *(&IllnessListDto{}).FromModel(&illness)
 	}
 
 	return &MedicalRecordDto{

@@ -20,6 +20,7 @@ declare module 'vue' {
     FilterDeregistration: typeof import('./src/components/vehicleData/FilterDeregistration.vue')['default']
     Header: typeof import('./src/components/Header.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
+    IllnessesList: typeof import('./src/components/IllnessesList.vue')['default']
     LoginView: typeof import('./src/components/LoginView.vue')['default']
     Navigation: typeof import('./src/components/Navigation.vue')['default']
     NewOwnerSide: typeof import('./src/components/NewOwnerSide.vue')['default']

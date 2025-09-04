@@ -57,24 +57,14 @@
     <v-card v-if="patient" elevation="7" variant="tonal" class="round-xl pa-4">
              <v-row>
                 <v-col cols="12" md="6">
-                    <v-card elevation="2">
-                        <v-card-title class="d-flex align-center justify-space-between">
-                            <span>Illnesses</span>
-                            <v-btn size="small" color="success" variant="elevated">
-                                <v-icon start>mdi-plus</v-icon>
-                                Add
-                            </v-btn>
-                        </v-card-title>
-                        <v-card-text>
-                            <div class="text-center text-grey py-4">
-                                No illnesses recorded.
-                            </div>
-                        </v-card-text>
-                    </v-card>
+                    <IllnessesList
+                        :patient="patient"
+                        :is-editing="illnessesInEditMode"
+                        @show-snackbar="showSnackbar"
+                    />
                 </v-col>
                 <v-col cols="12" md="6">
                     <CheckupsList
-                        v-if="patient"
                         :patient="patient"
                         :is-editing="checkupsInEditMode"
                         @show-snackbar="showSnackbar"
@@ -138,6 +128,7 @@ import OptionsDialogue from '@/components/optionsDialog.vue';
 import ConfirmDialogue from '@/components/confirmDialog.vue';
 import PatientEditForm from '@/components/PatientEditForm.vue';
 import CheckupsList from '@/components/CheckupsList.vue';
+import IllnessesList from '@/components/IllnessesList.vue';
 
 const router = useRouter();
 const patientStore = usePatientStore();
@@ -147,6 +138,7 @@ const isLoading = ref(true);
 const isDeleting = ref(false);
 const isSaving = ref(false);
 const checkupsInEditMode = ref(false);
+const illnessesInEditMode = ref(false);
 
 const editOptionsDialog = ref();
 const confirmDialog = ref();
@@ -183,7 +175,7 @@ function goBack() {
 async function openEditOptions() {
     const selectedChoice = await editOptionsDialog.value.Open({
         Title: 'What would you like to edit?',
-        Options: ['Patient Data', 'Checkups', 'Prescriptions']
+        Options: ['Patient Data', 'Checkups', 'Illnesses', 'Prescriptions']
     });
 
     if (selectedChoice === 'Patient Data') {
@@ -192,6 +184,10 @@ async function openEditOptions() {
         checkupsInEditMode.value = !checkupsInEditMode.value;
         const status = checkupsInEditMode.value ? 'enabled' : 'disabled';
         showSnackbar(`Checkups editing ${status}.`, 'info');
+    } else if (selectedChoice === 'Illnesses') {
+        illnessesInEditMode.value = !illnessesInEditMode.value;
+        const status = illnessesInEditMode.value ? 'enabled' : 'disabled';
+        showSnackbar(`Illnesses editing ${status}.`, 'info');
     } else if (selectedChoice) {
         await confirmDialog.value.Open({
             Title: selectedChoice,

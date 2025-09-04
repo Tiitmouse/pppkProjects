@@ -10,7 +10,7 @@ import (
 type Illness struct {
 	gorm.Model
 	Uuid            uuid.UUID  `gorm:"type:uuid;unique;not null"`
-	Name            uint       `gorm:"type:varchar(100);not null"`
+	Name            string     `gorm:"type:varchar(100);not null"`
 	StartDate       time.Time  `gorm:"type:date;not null"`
 	EndDate         *time.Time `gorm:"type:date;null"`
 	MedicalRecordID uint       `gorm:"type:uint;not null"`
@@ -18,10 +18,10 @@ type Illness struct {
 	Prescriptions   []Prescription `gorm:"foreignKey:IllnessID"`
 }
 
-func (i *Illness) UpdateIllness(illnes *Illness) *Illness {
-	i.Name = illnes.Name
-	i.StartDate = illnes.StartDate
-	i.EndDate = illnes.EndDate
+func (i *Illness) UpdateIllness(illness *Illness) *Illness {
+	i.Name = illness.Name
+	i.StartDate = illness.StartDate
+	i.EndDate = illness.EndDate
 
 	return i
 }

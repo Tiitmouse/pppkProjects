@@ -4,9 +4,11 @@ import { createNewPatientDto } from '@/dtos/patientDto';
 import { formatDate } from '@/utils/formatDate';
 import axios from './axios';
 import type { CheckupDto, CreateCheckupDto, UpdateCheckupDto } from '@/dtos/checkupDto';
+import type { CreateIllnessDto, IllnessListDto, UpdateIllnessDto } from '@/dtos/illnessDto';
 
 const BASE_URL_PATIENTS = '/patients';
 const BASE_URL_CHECKUPS = '/checkup';
+const BASE_URL_ILLNESSES = '/illnesses';
 
 export async function getAllPatients(): Promise<PatientDto[]> {
   const response = await axios.get<PatientDto[]>(BASE_URL_PATIENTS);
@@ -54,4 +56,25 @@ export async function updateCheckup(uuid: string, checkupData: UpdateCheckupDto)
 
 export async function deleteCheckup(uuid: string): Promise<void> {
   await axios.delete(`${BASE_URL_CHECKUPS}/${uuid}`);
+}
+
+//ILLNESSES
+
+export async function getIllnessesForRecord(recordUuid: string): Promise<IllnessListDto[]> {
+    const response = await axios.get<IllnessListDto[]>(`${BASE_URL_ILLNESSES}/record/${recordUuid}`);
+    return response.data;
+}
+
+export async function createIllness(illnessData: CreateIllnessDto): Promise<IllnessListDto> {
+    const response = await axios.post<IllnessListDto>(BASE_URL_ILLNESSES, illnessData);
+    return response.data;
+}
+
+export async function updateIllness(uuid: string, illnessData: UpdateIllnessDto): Promise<IllnessListDto> {
+    const response = await axios.put<IllnessListDto>(`${BASE_URL_ILLNESSES}/${uuid}`, illnessData);
+    return response.data;
+}
+
+export async function deleteIllness(uuid: string): Promise<void> {
+    await axios.delete(`${BASE_URL_ILLNESSES}/${uuid}`);
 }
