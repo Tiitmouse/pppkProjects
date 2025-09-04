@@ -42,8 +42,8 @@
 import { ref, reactive, watch, computed } from 'vue';
 import type { PropType } from 'vue';
 import type { Patient } from '@/stores/patientStore';
-import type { CheckupDto } from '@/dtos/checkupDto';
 import { CheckupType } from '@/enums/checkupType';
+import type { CreateCheckupDto } from '@/dtos/checkupDto';
 
 const props = defineProps({
     modelValue: {
@@ -67,7 +67,7 @@ const initialData = {
     IllnessID: undefined,
 };
 
-const checkupData = reactive<Partial<CheckupDto>>({ ...initialData });
+const checkupData = reactive<Partial<CreateCheckupDto>>({ ...initialData });
 
 watch(() => props.modelValue, (isOpen) => {
     if (isOpen) {
@@ -96,7 +96,7 @@ async function saveCheckup() {
     const { valid } = await form.value?.validate();
     if (!valid || !props.patient) return;
 
-    const payload: CheckupDto = {
+    const payload: CreateCheckupDto = {
         checkupDate: new Date(checkupData.checkupDate!).toISOString(),
         type: checkupData.type!,
         medicalRecordUuid: props.patient.medicalRecordUuid,

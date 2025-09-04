@@ -66,27 +66,21 @@
                             </v-btn>
                         </v-card-title>
                         <v-card-text>
-                            list of illnesses
+                            <div class="text-center text-grey py-4">
+                                No illnesses recorded.
+                            </div>
                         </v-card-text>
                     </v-card>
                 </v-col>
                 <v-col cols="12" md="6">
-                    <v-card elevation="2">
-                        <v-card-title class="d-flex align-center justify-space-between">
-                            <span>Checkups</span>
-                             <v-btn @click="isCheckupDialogOpen = true" size="small" color="success" variant="elevated">
-                                <v-icon start>mdi-plus</v-icon>
-                                Add
-                            </v-btn>
-                        </v-card-title>
-                        <v-card-text>
-                            list of checkups
-                        </v-card-text>
-                    </v-card>
+                    <CheckupsList
+                        v-if="patient"
+                        :patient="patient"
+                        @show-snackbar="showSnackbar"
+                    />
                 </v-col>
             </v-row>
         </v-card>
-
 
         <OptionsDialogue ref="editOptionsDialog" />
         <ConfirmDialogue ref="confirmDialog" />
@@ -106,13 +100,6 @@
                 </v-card-text>
             </v-card>
         </v-dialog>
-
-        <CheckupDialog
-            v-if="patient"
-            v-model="isCheckupDialogOpen"
-            :patient="patient"
-            @save="handleCreateCheckup"
-        />
 
         <v-dialog v-model="isDoctorDialogVisible" max-width="400px">
             <v-card>
@@ -145,11 +132,11 @@ import { ref, onMounted, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { usePatientStore } from '@/stores/patientStore';
 import type { Patient } from '@/stores/patientStore';
-import { deletePatient, updatePatient, createCheckup } from '@/services/patientService';
+import { deletePatient, updatePatient } from '@/services/patientService';
 import OptionsDialogue from '@/components/optionsDialog.vue';
 import ConfirmDialogue from '@/components/confirmDialog.vue';
 import PatientEditForm from '@/components/PatientEditForm.vue';
-import type { CheckupDto } from '@/dtos/checkupDto';
+import CheckupsList from '@/components/CheckupsList.vue';
 
 const router = useRouter();
 const patientStore = usePatientStore();
@@ -157,8 +144,7 @@ const patientStore = usePatientStore();
 const patient = ref<Patient | null>(null);
 const isLoading = ref(true);
 const isDeleting = ref(false);
-const isSaving = ref(false)
-const isCheckupDialogOpen = ref(false);
+const isSaving = ref(false);
 
 const editOptionsDialog = ref();
 const confirmDialog = ref();
@@ -222,17 +208,6 @@ async function handleUpdatePatient(updatedPatientData: Patient) {
         showSnackbar('Failed to update patient.', 'error');
     } finally {
         isSaving.value = false;
-    }
-}
-
-async function handleCreateCheckup(checkupData: CheckupDto) {
-    try {
-        const newCheckup = await createCheckup(checkupData);
-        showSnackbar('Checkup added successfully.', 'success');
-        isCheckupDialogOpen.value = false;
-    } catch (error) {
-        console.error("Failed to add checkup:", error);
-        showSnackbar('Failed to add checkup.', 'error');
     }
 }
 

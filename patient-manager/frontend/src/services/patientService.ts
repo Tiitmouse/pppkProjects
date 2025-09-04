@@ -3,7 +3,7 @@ import { createNewPatientDto } from '@/dtos/patientDto';
 
 import { formatDate } from '@/utils/formatDate';
 import axios from './axios';
-import type { CheckupDto } from '@/dtos/checkupDto';
+import type { CheckupDto, CreateCheckupDto } from '@/dtos/checkupDto';
 
 const BASE_URL_PATIENTS = '/patients';
 const BASE_URL_CHECKUPS = '/checkup';
@@ -35,7 +35,12 @@ export async function deletePatient(id: number): Promise<void> {
   await axios.delete(`${BASE_URL_PATIENTS}/${id}`);
 }
 
-export async function createCheckup(checkupDto: CheckupDto) {
+export async function createCheckup(checkupDto: CreateCheckupDto): Promise<CheckupDto> {
   const response = await axios.post<CheckupDto>(BASE_URL_CHECKUPS, checkupDto);
   return response.data;
+}
+
+export async function getCheckupsForRecord(recordUuid: string): Promise<CheckupDto[]> {
+    const response = await axios.get<CheckupDto[]>(`${BASE_URL_CHECKUPS}/record/${recordUuid}`);
+    return response.data;
 }

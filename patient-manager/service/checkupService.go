@@ -12,7 +12,7 @@ import (
 type ICheckupService interface {
 	Create(checkup *model.Checkup, recordUuid string) (*model.Checkup, error)
 	Update(checkupUuid uuid.UUID, checkupUpdateData *model.Checkup) (*model.Checkup, error)
-	//GetAll(recordUuid uuid.UUID) ([]model.Checkup)
+	GetAll(recordUuid uuid.UUID) ([]model.Checkup, error)
 	Delete(checkupUuid uuid.UUID) error
 }
 
@@ -109,4 +109,28 @@ func (c *CheckupService) Delete(checkupUuid uuid.UUID) error {
 
 	c.logger.Infof("Successfully checkup with UUID: %s", checkupUuid)
 	return nil
+}
+
+func (c *CheckupService) GetAll(recordUuid uuid.UUID) ([]model.Checkup, error) {
+	c.logger.Infof("Fetching all checkups for medical record uuid: %s", recordUuid)
+
+	var medicalRecord model.MedicalRecord
+	if err := c.db.Where("uuid = ?", recordUuid).First(&medicalRecord).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.logger.Warnf("Medical record with UUID %s not found", recordUuid)
+		} else {
+			c.logger.Errorf("Error finding medical record with UUID %s: %v", recordUuid, err)
+		}
+		return nil, err
+	}
+
+	var checkups []model.Checkup
+	rez := c.db.Preload("MedicalRecord").Where("medical_record_id = ?", medicalRecord.ID).Order("checkup_date desc").Find(&checkups)
+	if rez.Error != nil {
+		c.logger.Errorf("Error fetching checkups for medical record ID %d: %v", medicalRecord.ID, rez.Error)
+		return nil, rez.Error
+	}
+
+	c.logger.Infof("Successfully fetched %d checkups for medical record uuid: %s", len(checkups), recordUuid)
+	return checkups, nil
 }

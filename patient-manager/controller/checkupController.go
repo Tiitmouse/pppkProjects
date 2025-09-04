@@ -34,10 +34,53 @@ func NewCheckupController() *CheckupController {
 func (cc *CheckupController) RegisterEndpoints(router *gin.RouterGroup) {
 	checkupRoutes := router.Group("/checkup")
 	{
+		checkupRoutes.GET("/record/:recordUuid", cc.getAllByRecord)
 		checkupRoutes.POST("", cc.create)
 		checkupRoutes.PUT("/:uuid", cc.update)
 		checkupRoutes.DELETE("/:uuid", cc.delete)
 	}
+}
+
+// Add this new controller method
+// getAllByRecord godoc
+//
+//	@Summary		Get all checkups for a medical record
+//	@Description	Retrieves a list of all checkups associated with a specific medical record UUID.
+//	@Tags			checkup
+//	@Produce		json
+//	@Success		200	{array}	dto.CheckupDto
+//	@Failure		400
+//	@Failure		404
+//	@Failure		500
+//	@Param			recordUuid	path	string	true	"UUID of the medical record"
+//	@Router			/checkup/record/{recordUuid} [get]
+func (cc *CheckupController) getAllByRecord(c *gin.Context) {
+	recordUuid, err := uuid.Parse(c.Param("recordUuid"))
+	if err != nil {
+		cc.logger.Errorf("Error parsing record UUID '%s': %v", c.Param("recordUuid"), err)
+		c.AbortWithError(http.StatusBadRequest, errors.New("invalid UUID format"))
+		return
+	}
+
+	checkups, err := cc.checkupService.GetAll(recordUuid)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			cc.logger.Warnf("No medical record found for UUID %s", recordUuid)
+			c.AbortWithError(http.StatusNotFound, err)
+			return
+		}
+		cc.logger.Errorf("Failed to get checkups for record UUID %s: %+v", recordUuid, err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	var responseDtos []*dto.CheckupDto
+	for _, checkup := range checkups {
+		dto := (&dto.CheckupDto{}).FromModel(&checkup)
+		responseDtos = append(responseDtos, dto)
+	}
+
+	c.JSON(http.StatusOK, responseDtos)
 }
 
 // create godoc
