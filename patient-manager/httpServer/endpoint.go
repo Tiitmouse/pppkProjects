@@ -18,4 +18,5 @@ func setupHandlers(router *gin.Engine) {
 	controller.NewCheckupController().RegisterEndpoints(basePath)
 	controller.NewIllnessController().RegisterEndpoints(basePath)
 	controller.NewPrescriptionController().RegisterEndpoints(basePath)
+	controller.NewMedicationController().RegisterEndpoints(basePath)
 }

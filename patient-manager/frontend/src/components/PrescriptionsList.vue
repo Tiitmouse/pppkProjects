@@ -8,10 +8,7 @@
             </v-btn>
         </v-card-title>
         <v-card-text>
-            <div v-if="isLoading" class="text-center pa-4">
-                <v-progress-circular indeterminate color="primary"></v-progress-circular>
-            </div>
-            <v-data-table v-else :headers="headers" :items="prescriptions" density="compact">
+            <v-data-table v-if="prescriptions.length > 0" :headers="headers" :items="prescriptions" density="compact">
                 <template v-slot:item.issuedAt="{ item }">
                     {{ new Date(item.issuedAt).toLocaleDateString('hr-HR') }}
                 </template>
@@ -25,10 +22,8 @@
                         <v-icon size="small" @click="confirmAndDelete(item)">mdi-delete</v-icon>
                     </div>
                 </template>
-                 <template v-slot:no-data>
-                    <div class="text-center text-grey py-4">No prescriptions found for this illness.</div>
-                </template>
             </v-data-table>
+             <div v-else class="text-center text-grey py-4">There are no prescriptions yet for this illness.</div>
         </v-card-text>
     </v-card>
 
@@ -62,7 +57,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, reactive, watch } from 'vue';
 import type { PropType } from 'vue';
 import ConfirmDialogue from '@/components/confirmDialog.vue';
 import type { IllnessListDto } from '@/dtos/illnessDto';
@@ -92,7 +87,7 @@ const rules = { required: (v: any) => !!v || 'This field is required.' };
 
 const headers = [
     { title: 'Date Issued', key: 'issuedAt', align: 'start' },
-    { title: 'Medications', key: 'medications' },
+    { title: 'Medications', key: 'medications', sortable: false },
     { title: 'Actions', key: 'actions', sortable: false, align: 'end' },
 ] as const;
 
@@ -147,6 +142,10 @@ async function confirmAndDelete(prescription: PrescriptionListDto) {
         }
     }
 }
+
+watch(() => props.illness, () => {
+    loadData();
+}, { immediate: true });
 
 onMounted(loadData);
 </script>

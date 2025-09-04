@@ -16,7 +16,7 @@
                 :headers="headers"
                 :items="illnesses"
                 density="compact"
-                item-value="uuid"
+                item-value="id"
             >
                 <template v-slot:item.startDate="{ item }">
                     {{ new Date(item.startDate).toLocaleDateString('hr-HR') }}
@@ -26,7 +26,9 @@
                 </template>
                  <template v-slot:item.actions="{ item }">
                     <div class="d-flex justify-end">
-                        <v-btn @click="openPrescriptionsDialog(item)" size="small" variant="tonal" color="info" class="me-2">View</v-btn>
+                        <v-btn icon @click="$emit('view-prescriptions', item)" size="small" variant="tonal" color="info" class="me-2">
+                            <v-icon>mdi-pill</v-icon>
+                        </v-btn>
                         <template v-if="isEditing">
                             <v-icon size="small" class="me-2" @click="openEditDialog(item)">mdi-pencil</v-icon>
                             <v-icon size="small" @click="confirmAndDelete(item)">mdi-delete</v-icon>
@@ -60,25 +62,11 @@
         </v-card>
     </v-dialog>
 
-    <v-dialog v-model="isPrescriptionsDialogOpen" fullscreen>
-        <v-card>
-            <v-toolbar color="primary" dark>
-                <v-btn icon @click="isPrescriptionsDialogOpen = false">
-                    <v-icon>mdi-close</v-icon>
-                </v-btn>
-                <v-toolbar-title>Manage Prescriptions</v-toolbar-title>
-            </v-toolbar>
-            <v-container>
-                <PrescriptionsList v-if="selectedIllness" :illness="selectedIllness" @show-snackbar="emit('show-snackbar', $event[0], $event[1])" />
-            </v-container>
-        </v-card>
-    </v-dialog>
-
     <ConfirmDialogue ref="confirmDialog" />
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, reactive, computed } from 'vue';
+import { ref, reactive, computed, watch } from 'vue';
 import type { PropType } from 'vue';
 import type { Patient } from '@/stores/patientStore';
 import ConfirmDialogue from '@/components/confirmDialog.vue';
@@ -90,7 +78,7 @@ const props = defineProps({
     isEditing: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(['show-snackbar']);
+const emit = defineEmits(['show-snackbar', 'view-prescriptions']);
 
 const illnesses = ref<IllnessListDto[]>([]);
 const isLoading = ref(true);
@@ -100,25 +88,38 @@ const isFormValid = ref(false);
 const form = ref<any>(null);
 const selectedIllness = ref<IllnessListDto | null>(null);
 const confirmDialog = ref();
-const isPrescriptionsDialogOpen = ref(false);
 
 const formData = reactive({ name: '', startDate: '', endDate: '' });
 
 const rules = { required: (v: any) => !!v || 'This field is required.' };
 
-const baseHeaders = [
-    { title: 'ID', key: 'id', align: 'start', width: '15%' },
-    { title: 'Name', key: 'name', align: 'start' },
-    { title: 'Start Date', key: 'startDate' },
-    { title: 'End Date', key: 'endDate' },
-] as const;
-
 const headers = computed(() => {
-    const actionsHeader = { title: 'Actions', key: 'actions', sortable: false, align: 'end' } as const;
-    return props.isEditing
-        ? [...baseHeaders, actionsHeader]
-        : [...baseHeaders.slice(0, 4), actionsHeader];
+    const baseHeaders: readonly {
+        title: string;
+        key: string;
+        align?: 'start' | 'center' | 'end';
+        width?: string;
+        sortable?: boolean;
+    }[] = [
+        { title: 'ID', key: 'id', align: 'start', width: '15%' },
+        { title: 'Name', key: 'name', align: 'start' },
+        { title: 'Start Date', key: 'startDate' },
+        { title: 'End Date', key: 'endDate' },
+    ];
+
+    const actionsHeader: {
+        title: string;
+        key: string;
+        sortable: boolean;
+        align: 'start' | 'center' | 'end';
+    } = { title: 'Actions', key: 'actions', sortable: false, align: 'end' };
+
+    if (props.isEditing) {
+        return [...baseHeaders, actionsHeader];
+    }
+    return baseHeaders.concat(actionsHeader);
 });
+
 
 async function loadIllnesses() {
     if (!props.patient) return;
@@ -147,11 +148,6 @@ function openEditDialog(illness: IllnessListDto) {
         endDate: illness.endDate ? new Date(illness.endDate).toISOString().split('T')[0] : ''
     });
     isDialogOpen.value = true;
-}
-
-function openPrescriptionsDialog(illness: IllnessListDto) {
-    selectedIllness.value = illness;
-    isPrescriptionsDialogOpen.value = true;
 }
 
 function closeDialog() {
@@ -201,5 +197,9 @@ async function confirmAndDelete(illness: IllnessListDto) {
     }
 }
 
-onMounted(loadIllnesses);
+watch(() => props.patient, (newPatient) => {
+    if (newPatient) {
+        loadIllnesses();
+    }
+}, { immediate: true });
 </script>

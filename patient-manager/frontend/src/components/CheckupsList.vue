@@ -126,7 +126,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, reactive, computed } from 'vue';
+import { ref, reactive, computed, watch } from 'vue';
 import type { PropType } from 'vue';
 import { getCheckupsForRecord, createCheckup, updateCheckup, deleteCheckup } from '@/services/patientService';
 import type { Patient } from '@/stores/patientStore';
@@ -207,7 +207,6 @@ async function loadCheckups() {
         try {
             checkups.value = await getCheckupsForRecord(props.patient.medicalRecordUuid);
         } catch (error) {
-            console.error("Failed to load checkups:", error);
             emit('show-snackbar', 'Failed to load checkups.', 'error');
         } finally {
             isLoadingCheckups.value = false;
@@ -222,7 +221,6 @@ async function handleCreateCheckup(checkupData: CreateCheckupDto) {
         isCreateDialogOpen.value = false;
         await loadCheckups();
     } catch (error) {
-        console.error("Failed to add checkup:", error);
         emit('show-snackbar', 'Failed to add checkup.', 'error');
     }
 }
@@ -254,7 +252,6 @@ async function handleUpdateCheckup() {
         isEditDialogOpen.value = false;
         await loadCheckups();
     } catch (error) {
-        console.error("Failed to update checkup:", error);
         emit('show-snackbar', 'Failed to update checkup.', 'error');
     }
 }
@@ -271,13 +268,14 @@ async function confirmAndDelete(checkup: CheckupDto) {
             emit('show-snackbar', 'Checkup deleted successfully.', 'success');
             await loadCheckups();
         } catch (error) {
-            console.error("Failed to delete checkup:", error);
             emit('show-snackbar', 'Failed to delete checkup.', 'error');
         }
     }
 }
 
-onMounted(() => {
-    loadCheckups();
-});
+watch(() => props.patient, (newPatient) => {
+    if (newPatient) {
+        loadCheckups();
+    }
+}, { immediate: true });
 </script>

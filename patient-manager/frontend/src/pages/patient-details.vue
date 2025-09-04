@@ -54,24 +54,37 @@
                 <v-progress-circular indeterminate color="primary"></v-progress-circular>
             </div>
         </v-card>
-    <v-card v-if="patient" elevation="7" variant="tonal" class="round-xl pa-4">
-             <v-row>
-                <v-col cols="12" md="6">
-                    <IllnessesList
-                        :patient="patient"
-                        :is-editing="illnessesInEditMode"
+        <v-row>
+            <v-col cols="12" md="6">
+                <IllnessesList
+                    :patient="patient"
+                    :is-editing="illnessesInEditMode"
+                    @show-snackbar="showSnackbar"
+                    @view-prescriptions="handleViewPrescriptions"
+                />
+            </v-col>
+            <v-col cols="12" md="6">
+                <CheckupsList
+                    :patient="patient"
+                    :is-editing="checkupsInEditMode"
+                    @show-snackbar="showSnackbar"
+                />
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-col cols="12">
+                <v-card v-if="patient" elevation="7" variant="tonal" class="round-xl pa-4 mt-5">
+                    <PrescriptionsList
+                        v-if="selectedIllness"
+                        :illness="selectedIllness"
                         @show-snackbar="showSnackbar"
                     />
-                </v-col>
-                <v-col cols="12" md="6">
-                    <CheckupsList
-                        :patient="patient"
-                        :is-editing="checkupsInEditMode"
-                        @show-snackbar="showSnackbar"
-                    />
-                </v-col>
-            </v-row>
-        </v-card>
+                     <v-card-text v-else class="text-center text-grey">
+                        Select an illness to view prescriptions.
+                    </v-card-text>
+                </v-card>
+            </v-col>
+        </v-row>
 
         <OptionsDialogue ref="editOptionsDialog" />
         <ConfirmDialogue ref="confirmDialog" />
@@ -129,6 +142,8 @@ import ConfirmDialogue from '@/components/confirmDialog.vue';
 import PatientEditForm from '@/components/PatientEditForm.vue';
 import CheckupsList from '@/components/CheckupsList.vue';
 import IllnessesList from '@/components/IllnessesList.vue';
+import PrescriptionsList from '@/components/PrescriptionsList.vue';
+import type { IllnessListDto } from '@/dtos/illnessDto';
 
 const router = useRouter();
 const patientStore = usePatientStore();
@@ -139,6 +154,7 @@ const isDeleting = ref(false);
 const isSaving = ref(false);
 const checkupsInEditMode = ref(false);
 const illnessesInEditMode = ref(false);
+const selectedIllness = ref<IllnessListDto | null>(null);
 
 const editOptionsDialog = ref();
 const confirmDialog = ref();
@@ -175,7 +191,7 @@ function goBack() {
 async function openEditOptions() {
     const selectedChoice = await editOptionsDialog.value.Open({
         Title: 'What would you like to edit?',
-        Options: ['Patient Data', 'Checkups', 'Illnesses', 'Prescriptions']
+        Options: ['Patient Data', 'Checkups', 'Illnesses']
     });
 
     if (selectedChoice === 'Patient Data') {
@@ -188,12 +204,6 @@ async function openEditOptions() {
         illnessesInEditMode.value = !illnessesInEditMode.value;
         const status = illnessesInEditMode.value ? 'enabled' : 'disabled';
         showSnackbar(`Illnesses editing ${status}.`, 'info');
-    } else if (selectedChoice === 'Prescriptions') {
-        await confirmDialog.value.Open({
-            Title: 'Manage Prescriptions',
-            Message: `To manage prescriptions, please use the "View" button next to an illness in the illnesses list.`,
-            Options: { noCancel: true }
-        });
     }
 }
 
@@ -206,7 +216,6 @@ async function handleUpdatePatient(updatedPatientData: Patient) {
         isEditDialogOpen.value = false;
         showSnackbar('Patient updated successfully.', 'success');
     } catch (error) {
-        console.error("Failed to update patient:", error);
         showSnackbar('Failed to update patient.', 'error');
     } finally {
         isSaving.value = false;
@@ -228,11 +237,14 @@ async function confirmAndDelete() {
             showSnackbar('Patient deleted successfully.', 'success');
             router.push({ name: 'patient-list' });
         } catch (error) {
-            console.error("Failed to delete patient:", error);
             showSnackbar('Failed to delete patient. Please try again.', 'error');
         } finally {
             isDeleting.value = false;
         }
     }
+}
+
+function handleViewPrescriptions(illness: IllnessListDto) {
+    selectedIllness.value = illness;
 }
 </script>
