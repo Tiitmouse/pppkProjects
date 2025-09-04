@@ -8,18 +8,42 @@
                 <v-form ref="form" v-model="isFormValid">
                     <v-container>
                         <v-row>
-                            <v-col cols="12">
-                                <v-text-field v-model="checkupData.checkupDate" label="Checkup Date" type="date"
-                                    :rules="[rules.required]" required></v-text-field>
+                            <v-col cols="12" sm="6">
+                                <v-text-field
+                                    v-model="checkupData.checkupDate"
+                                    label="Checkup Date"
+                                    type="date"
+                                    :rules="[rules.required]"
+                                    required
+                                ></v-text-field>
+                            </v-col>
+                             <v-col cols="12" sm="6">
+                                <v-text-field
+                                    v-model="checkupData.checkupTime"
+                                    label="Checkup Time"
+                                    type="time"
+                                    :rules="[rules.required]"
+                                    required
+                                ></v-text-field>
                             </v-col>
                             <v-col cols="12">
-                                <v-select v-model="checkupData.type" :items="checkupTypes" item-title="text"
-                                    item-value="value" label="Checkup Type" :rules="[rules.required]"
-                                    required></v-select>
+                                <v-select
+                                    v-model="checkupData.type"
+                                    :items="checkupTypes"
+                                    item-title="text"
+                                    item-value="value"
+                                    label="Checkup Type"
+                                    :rules="[rules.required]"
+                                    required
+                                ></v-select>
                             </v-col>
-                            <v-col cols="12">
-                                <v-text-field v-model.number="checkupData.IllnessID"
-                                    label="Associated Illness ID (Optional)" type="number" clearable></v-text-field>
+                             <v-col cols="12">
+                                <v-text-field
+                                    v-model.number="checkupData.IllnessID"
+                                    label="Associated Illness ID (Optional)"
+                                    type="number"
+                                    clearable
+                                ></v-text-field>
                             </v-col>
                         </v-row>
                     </v-container>
@@ -30,7 +54,12 @@
                 <v-btn color="error" variant="elevated" @click="closeDialog">
                     Cancel
                 </v-btn>
-                <v-btn color="primary" variant="elevated" @click="saveCheckup" :disabled="!isFormValid">
+                <v-btn
+                    color="primary"
+                    variant="elevated"
+                    @click="saveCheckup"
+                    :disabled="!isFormValid"
+                >
                     Save Checkup
                 </v-btn>
             </v-card-actions>
@@ -63,11 +92,12 @@ const isFormValid = ref(false);
 
 const initialData = {
     checkupDate: new Date().toISOString().split('T')[0],
+    checkupTime: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
     type: undefined,
     IllnessID: undefined,
 };
 
-const checkupData = reactive<Partial<CreateCheckupDto>>({ ...initialData });
+const checkupData = reactive({ ...initialData });
 
 watch(() => props.modelValue, (isOpen) => {
     if (isOpen) {
@@ -96,12 +126,14 @@ async function saveCheckup() {
     const { valid } = await form.value?.validate();
     if (!valid || !props.patient) return;
 
+    const combinedDateTime = `${checkupData.checkupDate}T${checkupData.checkupTime}`;
+
     const payload: CreateCheckupDto = {
-        checkupDate: new Date(checkupData.checkupDate!).toISOString(),
+        checkupDate: new Date(combinedDateTime).toISOString(),
         type: checkupData.type!,
         medicalRecordUuid: props.patient.medicalRecordUuid,
     };
-
+    
     if (checkupData.IllnessID) {
         payload.IllnessID = checkupData.IllnessID;
     }

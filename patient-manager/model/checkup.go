@@ -28,7 +28,7 @@ const (
 type Checkup struct {
 	gorm.Model
 	Uuid            uuid.UUID   `gorm:"type:uuid;unique;not null"`
-	CheckupDate     time.Time   `gorm:"type:date;not null"`
+	CheckupDate     time.Time   `gorm:"not null"`
 	Type            CheckupType `gorm:"type:varchar(10);not null"`
 	MedicalRecordID uint        `gorm:"type:uint;not null"`
 	MedicalRecord   MedicalRecord

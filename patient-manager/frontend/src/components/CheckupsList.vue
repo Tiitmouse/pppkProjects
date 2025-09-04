@@ -23,6 +23,10 @@
                     {{ new Date(item.checkupDate).toLocaleDateString('hr-HR') }}
                 </template>
 
+                <template v-slot:item.checkupTime="{ item }">
+                    {{ new Date(item.checkupDate).toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit' }) }}
+                </template>
+
                 <template v-slot:group-header="{ item, columns, toggleGroup, isGroupOpen }">
                     <tr>
                         <td :colspan="columns.length">
@@ -80,6 +84,7 @@ const isCheckupDialogOpen = ref(false);
 
 const checkupHeaders = [
     { title: 'Date', key: 'checkupDate', align: 'start' },
+    { title: 'Time', key: 'checkupTime', align: 'start', sortable: false },
     { title: 'Associated Illness ID', key: 'IllnessID', align: 'end' },
 ] as const;
 
