@@ -19,17 +19,7 @@ export interface NavigationLink {
           Name: "Overview",
           AllowRoles: [UserRole.Doctor],
           Route: '/patient-list'
-        },
-        {
-          Name: "Checkups",
-          AllowRoles: [UserRole.Doctor],
-          Route: '/checkup' 
-        },
-        {
-          Name: "Perscriptions",
-          AllowRoles: [UserRole.Doctor],
-          Route: '/perscription'
-        },
+        }
       ]
     },
     {

@@ -35,22 +35,6 @@ export const routes = [
     },
   },  
   {
-    path: "/checkup",
-    name: "checkup",
-    component: () => import('@/pages/checkup.vue'),
-    meta: {
-      layout: 'default',
-    },
-  },
-    {
-    path: "/perscription",
-    name: "perscription",
-    component: () => import('@/pages/perscription.vue'),
-    meta: {
-      layout: 'default',
-    },
-  },
-  {
     path: '/new-user',
     name: 'new-user',
     component: () => import(/* @vite-ignore */ '@/pages/new-user.vue'),
