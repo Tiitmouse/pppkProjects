@@ -5,7 +5,6 @@ import (
 	"data-managment/util/env"
 	"fmt"
 	"io"
-	"mime/multipart"
 	"os"
 	"path/filepath"
 	"sync"
@@ -61,36 +60,34 @@ func Setup() error {
 	return nil
 }
 
-func (b *MinioBucket) Upload(file multipart.File, header *multipart.FileHeader) error {
+func (b *MinioBucket) GetFiles() ([]io.ReadCloser, error) {
 	b.lock.Lock()
 	defer b.lock.Unlock()
-	_, err := b.minioClientInstance.PutObject(
-		context.Background(),
-		bucketName,
-		header.Filename,
-		file,
-		header.Size,
-		minio.PutObjectOptions{ContentType: "application/octet-stream"})
-	if err != nil {
-		return fmt.Errorf("failed to upload %w", err)
-	}
-
-	return nil
-}
-
-func (b *MinioBucket) GetAllReaders() ([]io.ReadCloser, error) {
-	b.lock.Lock()
-	defer b.lock.Unlock()
+	ctx := context.Background()
 	readers := make([]io.ReadCloser, 0)
+	objectCh := b.minioClientInstance.ListObjects(ctx, bucketName, minio.ListObjectsOptions{})
 
-	for file := range b.minioClientInstance.ListObjects(context.Background(), bucketName, minio.ListObjectsOptions{}) {
-		zap.S().Debugf("Retriving object with name %s", file.Key)
-		reader, err := b.minioClientInstance.GetObject(context.Background(), bucketName, file.Key, minio.GetObjectOptions{})
+	for file := range objectCh {
+		if file.Err != nil {
+			zap.S().Errorf("Failed to list object: %v", file.Err)
+			for _, r := range readers {
+				_ = r.Close()
+			}
+			return nil, file.Err
+		}
+
+		zap.S().Debugf("Retrieving object with name %s", file.Key)
+		reader, err := b.minioClientInstance.GetObject(ctx, bucketName, file.Key, minio.GetObjectOptions{})
 		if err != nil {
+			zap.S().Errorf("Failed to get object '%s': %v", file.Key, err)
+			for _, r := range readers {
+				_ = r.Close()
+			}
 			return nil, err
 		}
 		readers = append(readers, reader)
 	}
+
 	return readers, nil
 }
 

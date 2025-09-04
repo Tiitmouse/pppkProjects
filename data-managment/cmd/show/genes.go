@@ -28,7 +28,7 @@ func connectData(patientCode string) error {
 
 	zap.S().Debugf("Found patient (code = %s) %+v ", patientCode, patientData)
 
-	files, err := bucket.Bucket.GetAllReaders()
+	files, err := bucket.Bucket.GetFiles()
 	if err != nil {
 		zap.S().Errorf("Failed to retrieve files err = %v", err)
 		return err
