@@ -23,13 +23,13 @@ func NewPatientRepository() PatientRepository {
 
 func (r *PatientRepository) FindAll() ([]model.Patient, error) {
 	var patients []model.Patient
-	err := r.db.Find(&patients).Error
+	err := r.db.Preload("MedicalRecord").Find(&patients).Error
 	return patients, err
 }
 
 func (r *PatientRepository) FindById(id uint) (model.Patient, error) {
 	var patient model.Patient
-	err := r.db.First(&patient, id).Error
+	err := r.db.Preload("MedicalRecord").First(&patient, id).Error
 	return patient, err
 }
 
@@ -39,7 +39,7 @@ func (r *PatientRepository) Create(patient model.Patient) (model.Patient, error)
 }
 
 func (r *PatientRepository) Update(patient model.Patient) (model.Patient, error) {
-	err := r.db.Save(&patient).Error
+	err := r.db.Preload("MedicalRecord").Save(&patient).Error
 	return patient, err
 }
 

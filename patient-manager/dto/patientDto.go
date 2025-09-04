@@ -3,12 +3,13 @@ package dto
 import "time"
 
 type PatientDto struct {
-	ID        uint      `json:"id"`
-	FirstName string    `json:"firstName"`
-	LastName  string    `json:"lastName"`
-	OIB       string    `json:"oib"`
-	BirthDate time.Time `json:"birthDate"`
-	Gender    string    `json:"gender"`
+	ID                uint      `json:"id"`
+	FirstName         string    `json:"firstName"`
+	LastName          string    `json:"lastName"`
+	OIB               string    `json:"oib"`
+	BirthDate         time.Time `json:"birthDate"`
+	Gender            string    `json:"gender"`
+	MedicalRecordUuid string    `json:"medicalRecordUuid"`
 }
 
 type NewPatientDto struct {

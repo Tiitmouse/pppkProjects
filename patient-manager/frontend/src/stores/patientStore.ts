@@ -7,6 +7,7 @@ export interface Patient {
   oib: string;
   birthDate: string;
   gender: string;
+  medicalRecordUuid: string
 }
 
 export const usePatientStore = defineStore('patient', {

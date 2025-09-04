@@ -8,4 +8,5 @@ export interface Patient {
   birthDate: string;
   gender: string;
   role: UserRole.Patient;
+  medicalRecordUuid: string
 }

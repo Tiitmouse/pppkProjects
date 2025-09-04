@@ -42,8 +42,8 @@
             </v-row>
              <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn variant="text" @click="$emit('cancel')">Cancel</v-btn>
-                <v-btn color="primary" type="submit" :loading="isSaving">Save</v-btn>
+                <v-btn color="error" variant="elevated" @click="$emit('cancel')">Cancel</v-btn>
+                <v-btn color="primary" variant="elevated" type="submit" :loading="isSaving">Save</v-btn>
             </v-card-actions>
         </v-container>
     </v-form>
@@ -67,7 +67,6 @@ const editablePatient = ref<Patient>({} as Patient);
 
 watch(() => props.patient, (newVal) => {
   if (newVal) {
-    // Create a local, editable copy. This is important to not modify the prop directly.
     const date = new Date(newVal.birthDate);
     const year = date.getFullYear();
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -75,13 +74,12 @@ watch(() => props.patient, (newVal) => {
     
     editablePatient.value = { 
         ...newVal,
-        birthDate: `${year}-${month}-${day}` // Format for the date input
+        birthDate: `${year}-${month}-${day}`
     };
   }
 }, { immediate: true });
 
 function submit() {
-    // Format the date back to ISO string before emitting
     const patientDataToSave = {
         ...editablePatient.value,
         birthDate: new Date(editablePatient.value.birthDate).toISOString()

@@ -10,7 +10,7 @@ import (
 )
 
 type ICheckupService interface {
-	Create(checkup *model.Checkup, recordID uint) (*model.Checkup, error)
+	Create(checkup *model.Checkup, recordUuid string) (*model.Checkup, error)
 	Update(checkupUuid uuid.UUID, checkupUpdateData *model.Checkup) (*model.Checkup, error)
 	//GetAll(recordUuid uuid.UUID) ([]model.Checkup)
 	Delete(checkupUuid uuid.UUID) error
@@ -33,9 +33,17 @@ func NewChekupService() ICheckupService {
 	return service
 }
 
-func (c *CheckupService) Create(checkup *model.Checkup, recordID uint) (*model.Checkup, error) {
+func (c *CheckupService) Create(checkup *model.Checkup, recordUuid string) (*model.Checkup, error) {
 	checkup.Uuid = uuid.New()
-	c.logger.Infof("Creating checkup for medical record ID: %d", recordID)
+	c.logger.Infof("Creating checkup for medical record uuid: %s", recordUuid)
+
+	var medicalRecord model.MedicalRecord
+	if err := c.db.Where("uuid = ?", recordUuid).First(&medicalRecord).Error; err != nil {
+		c.logger.Errorf("Error finding medical record with UUID %s: %v", recordUuid, err)
+		return nil, err
+	}
+
+	checkup.MedicalRecordID = medicalRecord.ID
 
 	rez := c.db.Create(checkup)
 	if rez.Error != nil {

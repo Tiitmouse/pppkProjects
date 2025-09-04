@@ -53,14 +53,13 @@ func (cc *CheckupController) RegisterEndpoints(router *gin.RouterGroup) {
 //	@Param			model	body	dto.CreateCheckupDto	true	"Data for creating a new checkup"
 //	@Router			/checkup [post]
 func (cc *CheckupController) create(c *gin.Context) {
-	var createDto dto.CheckupDto
+	var createDto dto.CreateCheckupDto
 	if err := c.ShouldBindJSON(&createDto); err != nil {
 		cc.logger.Errorf("Error binding JSON for create checkup: %v", err)
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	// Assuming a ToModel function exists on the DTO to convert it to the model.
 	checkupModel, err := createDto.ToModel()
 	if err != nil {
 		cc.logger.Errorf("Error converting DTO to model for create checkup: %v", err)
@@ -68,7 +67,7 @@ func (cc *CheckupController) create(c *gin.Context) {
 		return
 	}
 
-	createdCheckup, err := cc.checkupService.Create(checkupModel, createDto.MedicalRecordID)
+	createdCheckup, err := cc.checkupService.Create(checkupModel, createDto.MedicalRecordUuid)
 	if err != nil {
 		cc.logger.Errorf("Failed to create checkup: %+v", err)
 		c.AbortWithError(http.StatusInternalServerError, err)

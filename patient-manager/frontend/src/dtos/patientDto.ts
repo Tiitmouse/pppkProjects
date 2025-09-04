@@ -10,6 +10,7 @@ export interface PatientDto {
   oib: string;
   birthDate: string; 
   gender: string;
+  medicalRecordUuid: string
 }
 
 export interface NewPatientDto {
@@ -20,6 +21,7 @@ export interface NewPatientDto {
   birthDate: string;
   gender: string;
   role: UserRole.Patient
+  medicalRecordUuid: string
 }
 
 export function createNewPatientDto(
@@ -32,6 +34,7 @@ export function createNewPatientDto(
         oib: patient.oib,
         gender: patient.gender,
         birthDate: formatDate(patient.birthDate),
-        role: patient.role
+        role: patient.role,
+        medicalRecordUuid: patient.medicalRecordUuid
     };
 }

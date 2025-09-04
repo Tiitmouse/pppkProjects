@@ -46,12 +46,13 @@ func (s *PatientService) GetAllPatients() ([]dto.PatientDto, error) {
 	var patientDtos []dto.PatientDto
 	for _, p := range patients {
 		patientDtos = append(patientDtos, dto.PatientDto{
-			ID:        p.ID,
-			FirstName: p.FirstName,
-			LastName:  p.LastName,
-			OIB:       p.OIB,
-			BirthDate: p.BirthDate,
-			Gender:    p.Gender,
+			ID:                p.ID,
+			FirstName:         p.FirstName,
+			LastName:          p.LastName,
+			OIB:               p.OIB,
+			BirthDate:         p.BirthDate,
+			Gender:            p.Gender,
+			MedicalRecordUuid: p.MedicalRecord.Uuid.String(),
 		})
 	}
 	return patientDtos, nil
@@ -63,12 +64,13 @@ func (s *PatientService) GetPatientById(id uint) (dto.PatientDto, error) {
 		return dto.PatientDto{}, err
 	}
 	return dto.PatientDto{
-		ID:        patient.ID,
-		FirstName: patient.FirstName,
-		LastName:  patient.LastName,
-		OIB:       patient.OIB,
-		BirthDate: patient.BirthDate,
-		Gender:    patient.Gender,
+		ID:                patient.ID,
+		FirstName:         patient.FirstName,
+		LastName:          patient.LastName,
+		OIB:               patient.OIB,
+		BirthDate:         patient.BirthDate,
+		Gender:            patient.Gender,
+		MedicalRecordUuid: patient.MedicalRecord.Uuid.String(),
 	}, nil
 }
 
@@ -107,12 +109,13 @@ func (s *PatientService) CreatePatient(newPatient dto.NewPatientDto) (dto.Patien
 	s.patientRepository.Update(createdPatient)
 
 	return dto.PatientDto{
-		ID:        createdPatient.ID,
-		FirstName: createdPatient.FirstName,
-		LastName:  createdPatient.LastName,
-		OIB:       createdPatient.OIB,
-		BirthDate: createdPatient.BirthDate,
-		Gender:    createdPatient.Gender,
+		ID:                createdPatient.ID,
+		FirstName:         createdPatient.FirstName,
+		LastName:          createdPatient.LastName,
+		OIB:               createdPatient.OIB,
+		BirthDate:         createdPatient.BirthDate,
+		Gender:            createdPatient.Gender,
+		MedicalRecordUuid: createdPatient.MedicalRecord.Uuid.String(),
 	}, nil
 }
 
@@ -134,12 +137,13 @@ func (s *PatientService) UpdatePatient(id uint, patientDto dto.PatientDto) (dto.
 	}
 
 	return dto.PatientDto{
-		ID:        updatedPatient.ID,
-		FirstName: updatedPatient.FirstName,
-		LastName:  updatedPatient.LastName,
-		OIB:       updatedPatient.OIB,
-		BirthDate: updatedPatient.BirthDate,
-		Gender:    updatedPatient.Gender,
+		ID:                updatedPatient.ID,
+		FirstName:         updatedPatient.FirstName,
+		LastName:          updatedPatient.LastName,
+		OIB:               updatedPatient.OIB,
+		BirthDate:         updatedPatient.BirthDate,
+		Gender:            updatedPatient.Gender,
+		MedicalRecordUuid: updatedPatient.MedicalRecord.Uuid.String(),
 	}, nil
 }
 

@@ -8,30 +8,43 @@ import (
 )
 
 type CheckupDto struct {
-	Uuid            uuid.UUID         `json:"uuid"`
-	PatientID       uint              `json:"patientId"`
-	CheckupDate     time.Time         `json:"checkupDate"`
-	Type            model.CheckupType `json:"type"`
-	MedicalRecordID uint              `json:"medicalRecordId"`
-	IllnessID       *uint             `json:"illnessId"`
+	Uuid              uuid.UUID         `json:"uuid"`
+	CheckupDate       time.Time         `json:"checkupDate"`
+	Type              model.CheckupType `json:"type"`
+	MedicalRecordUuid string            `json:"medicalRecordUuid"`
+	IllnessID         *uint             `json:"illnessId"`
 }
 
 func (dto *CheckupDto) FromModel(c *model.Checkup) *CheckupDto {
 	return &CheckupDto{
-		Uuid:            c.Uuid,
-		CheckupDate:     c.CheckupDate,
-		Type:            c.Type,
-		MedicalRecordID: c.MedicalRecordID,
-		IllnessID:       c.IllnessID,
+		Uuid:              c.Uuid,
+		CheckupDate:       c.CheckupDate,
+		Type:              c.Type,
+		MedicalRecordUuid: c.MedicalRecord.Uuid.String(),
+		IllnessID:         c.IllnessID,
 	}
 }
 
 func (dto *CheckupDto) ToModel() (*model.Checkup, error) {
 	return &model.Checkup{
-		Uuid:            dto.Uuid,
-		CheckupDate:     dto.CheckupDate,
-		Type:            dto.Type,
-		MedicalRecordID: dto.MedicalRecordID,
-		IllnessID:       dto.IllnessID,
+		Uuid:        dto.Uuid,
+		CheckupDate: dto.CheckupDate,
+		Type:        dto.Type,
+		IllnessID:   dto.IllnessID,
+	}, nil
+}
+
+type CreateCheckupDto struct {
+	CheckupDate       time.Time         `json:"checkupDate" binding:"required"`
+	Type              model.CheckupType `json:"type" binding:"required"`
+	MedicalRecordUuid string            `json:"medicalRecordUuid" binding:"required"`
+	IllnessID         *uint             `json:"illnessId"`
+}
+
+func (dto *CreateCheckupDto) ToModel() (*model.Checkup, error) {
+	return &model.Checkup{
+		CheckupDate: dto.CheckupDate,
+		Type:        dto.Type,
+		IllnessID:   dto.IllnessID,
 	}, nil
 }
