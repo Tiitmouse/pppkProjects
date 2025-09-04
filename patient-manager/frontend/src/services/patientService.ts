@@ -1,6 +1,4 @@
 import type { PatientDto, NewPatientDto } from '@/dtos/patientDto';
-import { createNewPatientDto } from '@/dtos/patientDto';
-import { UserRole } from '@/enums/userRole';
 import { formatDate } from '@/utils/formatDate';
 import axios from './axios';
 import type { CheckupDto, CreateCheckupDto, UpdateCheckupDto } from '@/dtos/checkupDto';
@@ -69,6 +67,21 @@ export async function updateCheckup(uuid: string, checkupData: UpdateCheckupDto)
 
 export async function deleteCheckup(uuid: string): Promise<void> {
   await axios.delete(`${BASE_URL_CHECKUPS}/${uuid}`);
+}
+
+export async function uploadCheckupImages(checkupUuid: string, files: File[]): Promise<CheckupDto> {
+  const formData = new FormData();
+  files.forEach(file => {
+    formData.append('files', file);
+  });
+  const response = await axios.post<CheckupDto>(`${BASE_URL_CHECKUPS}/${checkupUuid}/images`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return response.data;
+}
+
+export async function deleteCheckupImage(checkupUuid: string, imageUuid: string): Promise<void> {
+  await axios.delete(`${BASE_URL_CHECKUPS}/${checkupUuid}/images/${imageUuid}`);
 }
 
 //ILLNESSES

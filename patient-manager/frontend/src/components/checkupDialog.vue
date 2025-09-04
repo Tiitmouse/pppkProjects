@@ -9,41 +9,25 @@
                     <v-container>
                         <v-row>
                             <v-col cols="12" sm="6">
-                                <v-text-field
-                                    v-model="checkupData.checkupDate"
-                                    label="Checkup Date"
-                                    type="date"
-                                    :rules="[rules.required]"
-                                    required
-                                ></v-text-field>
+                                <v-text-field v-model="checkupData.checkupDate" label="Checkup Date" type="date"
+                                    :rules="[rules.required]" required></v-text-field>
                             </v-col>
-                             <v-col cols="12" sm="6">
-                                <v-text-field
-                                    v-model="checkupData.checkupTime"
-                                    label="Checkup Time"
-                                    type="time"
-                                    :rules="[rules.required]"
-                                    required
-                                ></v-text-field>
+                            <v-col cols="12" sm="6">
+                                <v-text-field v-model="checkupData.checkupTime" label="Checkup Time" type="time"
+                                    :rules="[rules.required]" required></v-text-field>
                             </v-col>
                             <v-col cols="12">
-                                <v-select
-                                    v-model="checkupData.type"
-                                    :items="checkupTypes"
-                                    item-title="text"
-                                    item-value="value"
-                                    label="Checkup Type"
-                                    :rules="[rules.required]"
-                                    required
-                                ></v-select>
+                                <v-select v-model="checkupData.type" :items="checkupTypes" item-title="text"
+                                    item-value="value" label="Checkup Type" :rules="[rules.required]"
+                                    required></v-select>
                             </v-col>
-                             <v-col cols="12">
-                                <v-text-field
-                                    v-model.number="checkupData.IllnessID"
-                                    label="Associated Illness ID (Optional)"
-                                    type="number"
-                                    clearable
-                                ></v-text-field>
+                            <v-col cols="12">
+                                <v-text-field v-model.number="checkupData.illnessId"
+                                    label="Associated Illness ID (Optional)" type="number" clearable></v-text-field>
+                            </v-col>
+                            <v-col cols="12">
+                                <v-file-input v-model="checkupData.files" label="Upload Images (Optional)"
+                                    prepend-icon="mdi-camera" multiple accept="image/*" clearable></v-file-input>
                             </v-col>
                         </v-row>
                     </v-container>
@@ -54,12 +38,7 @@
                 <v-btn color="error" variant="elevated" @click="closeDialog">
                     Cancel
                 </v-btn>
-                <v-btn
-                    color="primary"
-                    variant="elevated"
-                    @click="saveCheckup"
-                    :disabled="!isFormValid"
-                >
+                <v-btn color="primary" variant="elevated" @click="saveCheckup" :disabled="!isFormValid">
                     Save Checkup
                 </v-btn>
             </v-card-actions>
@@ -73,6 +52,7 @@ import type { PropType } from 'vue';
 import type { Patient } from '@/stores/patientStore';
 import { CheckupType } from '@/enums/checkupType';
 import type { CreateCheckupDto } from '@/dtos/checkupDto';
+import { createCheckup, uploadCheckupImages } from '@/services/patientService';
 
 const props = defineProps({
     modelValue: {
@@ -94,7 +74,8 @@ const initialData = {
     checkupDate: new Date().toISOString().split('T')[0],
     checkupTime: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
     type: undefined,
-    IllnessID: undefined,
+    illnessId: undefined,
+    files: [],
 };
 
 const checkupData = reactive({ ...initialData });
@@ -133,11 +114,19 @@ async function saveCheckup() {
         type: checkupData.type!,
         medicalRecordUuid: props.patient.medicalRecordUuid,
     };
-    
-    if (checkupData.IllnessID) {
-        payload.IllnessID = checkupData.IllnessID;
+
+    if (checkupData.illnessId) {
+        payload.illnessId = checkupData.illnessId;
     }
 
-    emit('save', payload);
+    try {
+        const createdCheckup = await createCheckup(payload);
+        if (checkupData.files && checkupData.files.length > 0) {
+            await uploadCheckupImages(createdCheckup.uuid, checkupData.files);
+        }
+        emit('save'); 
+    } catch (error) {
+        console.error('Failed to create checkup:', error);
+    }
 }
 </script>

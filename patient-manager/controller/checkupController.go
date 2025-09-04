@@ -40,6 +40,7 @@ func (cc *CheckupController) RegisterEndpoints(router *gin.RouterGroup) {
 		checkupRoutes.PUT("/:uuid", cc.update)
 		checkupRoutes.DELETE("/:uuid", cc.delete)
 		checkupRoutes.POST("/:uuid/images", cc.addImages)
+		checkupRoutes.DELETE("/:uuid/images/:imageUuid", cc.deleteImage)
 	}
 }
 
@@ -260,4 +261,37 @@ func (cc *CheckupController) addImages(c *gin.Context) {
 
 	var responseDto dto.CheckupDto
 	c.JSON(http.StatusOK, responseDto.FromModel(updatedCheckup))
+}
+
+// deleteImage godoc
+// @Summary		Delete an image from a checkup
+// @Description	Deletes a specific image by its UUID
+// @Tags			checkup
+// @Param			uuid		path	string	true	"Checkup UUID"
+// @Param			imageUuid	path	string	true	"Image UUID to delete"
+// @Success		204
+// @Failure		400
+// @Failure		404
+// @Failure		500
+// @Router			/checkup/{uuid}/images/{imageUuid} [delete]
+func (cc *CheckupController) deleteImage(c *gin.Context) {
+	checkupUuid := c.Param("uuid")
+	imageUuid := c.Param("imageUuid")
+
+	if checkupUuid == "" || imageUuid == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Checkup UUID and Image UUID are required"})
+		return
+	}
+
+	err := cc.checkupService.DeleteImage(imageUuid)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Image not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete image"})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }

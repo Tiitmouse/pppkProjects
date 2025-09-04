@@ -10,6 +10,8 @@ import (
 func setupHandlers(router *gin.Engine) {
 	router.Use(middleware.CorsHeader())
 
+	router.Static("/uploads", "./uploads")
+
 	basePath := router.Group("/api")
 
 	controller.NewLoginController().RegisterEndpoints(basePath)

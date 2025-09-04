@@ -11,14 +11,8 @@
             <div v-if="isLoadingCheckups" class="text-center pa-4">
                 <v-progress-circular indeterminate color="primary"></v-progress-circular>
             </div>
-            <v-data-table
-                v-else
-                :headers="checkupHeaders"
-                :items="checkups"
-                :group-by="[{ key: 'type', order: 'asc' }]"
-                density="compact"
-                item-value="uuid"
-            >
+            <v-data-table v-else :headers="checkupHeaders" :items="checkups" :group-by="[{ key: 'type', order: 'asc' }]"
+                density="compact" item-value="uuid">
                 <template v-slot:item.checkupDate="{ item }">
                     {{ new Date(item.checkupDate).toLocaleDateString('hr-HR') }}
                 </template>
@@ -34,15 +28,23 @@
                     </div>
                 </template>
 
+                <template v-slot:item.images="{ item }">
+                    <div v-if="item.images && item.images.length > 0">
+                        <v-btn icon @click="openGallery(item.images)" size="small" variant="tonal" color="info"
+                            class="me-2">
+                            <v-icon color="info">mdi-image-outline</v-icon>
+                        </v-btn>
+                    </div>
+                    <div v-else>
+                        <v-icon color="info">mdi-image-off-outline</v-icon>
+                    </div>
+                </template>
+
                 <template v-slot:group-header="{ item, columns, toggleGroup, isGroupOpen }">
                     <tr>
                         <td :colspan="columns.length">
-                            <VBtn
-                                size="small"
-                                variant="text"
-                                :icon="isGroupOpen(item) ? '$expand' : '$next'"
-                                @click="toggleGroup(item)"
-                            ></VBtn>
+                            <VBtn size="small" variant="text" :icon="isGroupOpen(item) ? '$expand' : '$next'"
+                                @click="toggleGroup(item)"></VBtn>
                             <span class="font-weight-bold">{{ getFullCheckupTypeName(item.value) }}</span>
                         </td>
                     </tr>
@@ -57,12 +59,7 @@
         </v-card-text>
     </v-card>
 
-    <CheckupDialog
-        v-if="patient"
-        v-model="isCreateDialogOpen"
-        :patient="patient"
-        @save="handleCreateCheckup"
-    />
+    <CheckupDialog v-if="patient" v-model="isCreateDialogOpen" :patient="patient" @save="handleCreateCheckup" />
 
     <v-dialog v-model="isEditDialogOpen" persistent max-width="600px">
         <v-card v-if="selectedCheckup">
@@ -74,41 +71,34 @@
                     <v-container>
                         <v-row>
                             <v-col cols="12" sm="6">
-                                <v-text-field
-                                    v-model="editFormData.checkupDate"
-                                    label="Checkup Date"
-                                    type="date"
-                                    :rules="[rules.required]"
-                                    required
-                                ></v-text-field>
+                                <v-text-field v-model="editFormData.checkupDate" label="Checkup Date" type="date"
+                                    :rules="[rules.required]" required></v-text-field>
                             </v-col>
-                             <v-col cols="12" sm="6">
-                                <v-text-field
-                                    v-model="editFormData.checkupTime"
-                                    label="Checkup Time"
-                                    type="time"
-                                    :rules="[rules.required]"
-                                    required
-                                ></v-text-field>
+                            <v-col cols="12" sm="6">
+                                <v-text-field v-model="editFormData.checkupTime" label="Checkup Time" type="time"
+                                    :rules="[rules.required]" required></v-text-field>
                             </v-col>
                             <v-col cols="12">
-                                <v-select
-                                    v-model="editFormData.type"
-                                    :items="checkupTypes"
-                                    item-title="text"
-                                    item-value="value"
-                                    label="Checkup Type"
-                                    :rules="[rules.required]"
-                                    required
-                                ></v-select>
+                                <v-select v-model="editFormData.type" :items="checkupTypes" item-title="text"
+                                    item-value="value" label="Checkup Type" :rules="[rules.required]"
+                                    required></v-select>
                             </v-col>
-                             <v-col cols="12">
-                                <v-text-field
-                                    v-model.number="editFormData.illnessId"
-                                    label="Associated Illness ID (Optional)"
-                                    type="number"
-                                    clearable
-                                ></v-text-field>
+                            <v-col cols="12">
+                                <v-text-field v-model.number="editFormData.illnessId"
+                                    label="Associated Illness ID (Optional)" type="number" clearable></v-text-field>
+                            </v-col>
+                            <v-col cols="12">
+                                <v-file-input v-model="newFiles" label="Add More Images" prepend-icon="mdi-camera"
+                                    multiple accept="image/*" clearable></v-file-input>
+                            </v-col>
+                            <v-col cols="12">
+                                <div class="d-flex flex-wrap">
+                                    <div v-for="image in existingImages" :key="image.uuid" class="ma-2">
+                                        <v-img :src="getImageUrl(image.path)" height="100" width="100"></v-img>
+                                        <v-btn small color="error" class="mt-1"
+                                            @click="deleteImage(image)">Delete</v-btn>
+                                    </div>
+                                </div>
                             </v-col>
                         </v-row>
                     </v-container>
@@ -117,20 +107,35 @@
             <v-card-actions>
                 <v-spacer></v-spacer>
                 <v-btn color="error" variant="text" @click="isEditDialogOpen = false">Cancel</v-btn>
-                <v-btn color="primary" variant="elevated" @click="handleUpdateCheckup" :disabled="!isEditFormValid">Save</v-btn>
+                <v-btn color="primary" variant="elevated" @click="handleUpdateCheckup"
+                    :disabled="!isEditFormValid">Save</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
 
     <ConfirmDialogue ref="confirmDialog" />
+
+    <v-dialog v-model="isGalleryOpen" max-width="800px">
+        <v-card>
+            <v-carousel cycle hide-delimiter-background show-arrows-on-hover>
+                <v-carousel-item v-for="(image, i) in selectedCheckupImages" :key="i">
+                    <img :src="getImageUrl(image.path)" style="width: 100%; height: 100%; object-fit: contain;">
+                </v-carousel-item>
+            </v-carousel>
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="primary" @click="isGalleryOpen = false">Close</v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
 </template>
 
 <script lang="ts" setup>
 import { ref, reactive, computed, watch } from 'vue';
 import type { PropType } from 'vue';
-import { getCheckupsForRecord, createCheckup, updateCheckup, deleteCheckup } from '@/services/patientService';
+import { getCheckupsForRecord, createCheckup, updateCheckup, deleteCheckup, uploadCheckupImages, deleteCheckupImage } from '@/services/patientService';
 import type { Patient } from '@/stores/patientStore';
-import { type CheckupDto, type CreateCheckupDto, type UpdateCheckupDto } from '@/dtos/checkupDto';
+import { type CheckupDto, type CreateCheckupDto, type UpdateCheckupDto, type ImageDto } from '@/dtos/checkupDto';
 import { CheckupType } from '@/enums/checkupType';
 import CheckupDialog from '@/components/checkupDialog.vue';
 import ConfirmDialogue from '@/components/confirmDialog.vue';
@@ -147,7 +152,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits<{
-  (e: 'show-snackbar', text: string, color: 'success' | 'error' | 'info'): void
+    (e: 'show-snackbar', text: string, color: 'success' | 'error' | 'info'): void
 }>();
 
 const checkups = ref<CheckupDto[]>([]);
@@ -158,6 +163,10 @@ const isEditFormValid = ref(false);
 const editForm = ref<any>(null);
 const selectedCheckup = ref<CheckupDto | null>(null);
 const confirmDialog = ref();
+const isGalleryOpen = ref(false);
+const selectedCheckupImages = ref<ImageDto[]>([]);
+const newFiles = ref<File[]>([]);
+const existingImages = ref<ImageDto[]>([]);
 
 const editFormData = reactive({
     checkupDate: '',
@@ -170,6 +179,7 @@ const baseHeaders = [
     { title: 'Date', key: 'checkupDate', align: 'start' },
     { title: 'Time', key: 'checkupTime', align: 'start', sortable: false },
     { title: 'Associated Illness ID', key: 'illnessId', align: 'end' },
+    { title: 'Images', key: 'images', sortable: false, align: 'center' },
 ] as const;
 
 const checkupHeaders = computed(() => {
@@ -201,6 +211,12 @@ function getFullCheckupTypeName(typeValue: CheckupType): string {
     return typeValue;
 }
 
+function getImageUrl(path: string): string {
+    const backendUrl = 'http://localhost:8098';
+    const cleanPath = path.replace('./', '').replace(/^\//, '');
+    return `${backendUrl}/${cleanPath}`;
+}
+
 async function loadCheckups() {
     if (props.patient?.medicalRecordUuid) {
         isLoadingCheckups.value = true;
@@ -214,12 +230,11 @@ async function loadCheckups() {
     }
 }
 
-async function handleCreateCheckup(checkupData: CreateCheckupDto) {
+async function handleCreateCheckup() {
     try {
-        await createCheckup(checkupData);
+        await loadCheckups();
         emit('show-snackbar', 'Checkup added successfully.', 'success');
         isCreateDialogOpen.value = false;
-        await loadCheckups();
     } catch (error) {
         emit('show-snackbar', 'Failed to add checkup.', 'error');
     }
@@ -232,6 +247,8 @@ function openEditDialog(checkup: CheckupDto) {
     editFormData.checkupTime = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
     editFormData.type = checkup.type;
     editFormData.illnessId = checkup.illnessId;
+    existingImages.value = checkup.images || [];
+    newFiles.value = [];
     isEditDialogOpen.value = true;
 }
 
@@ -248,11 +265,35 @@ async function handleUpdateCheckup() {
 
     try {
         await updateCheckup(selectedCheckup.value.uuid, payload);
+
+        if (newFiles.value.length > 0) {
+            await uploadCheckupImages(selectedCheckup.value.uuid, newFiles.value);
+        }
+
         emit('show-snackbar', 'Checkup updated successfully.', 'success');
         isEditDialogOpen.value = false;
         await loadCheckups();
     } catch (error) {
         emit('show-snackbar', 'Failed to update checkup.', 'error');
+    }
+}
+
+async function deleteImage(image: ImageDto) {
+    if (!selectedCheckup.value) return;
+    const isConfirmed = await confirmDialog.value.Open({
+        Title: 'Delete Image',
+        Message: `Are you sure you want to delete this image? This action cannot be undone.`,
+    });
+
+    if (isConfirmed) {
+        try {
+            await deleteCheckupImage(selectedCheckup.value.uuid, image.uuid);
+            existingImages.value = existingImages.value.filter(img => img.uuid !== image.uuid);
+            emit('show-snackbar', 'Image deleted successfully.', 'success');
+            await loadCheckups();
+        } catch (error) {
+            emit('show-snackbar', 'Failed to delete image.', 'error');
+        }
     }
 }
 
@@ -271,6 +312,11 @@ async function confirmAndDelete(checkup: CheckupDto) {
             emit('show-snackbar', 'Failed to delete checkup.', 'error');
         }
     }
+}
+
+function openGallery(images: ImageDto[]) {
+    selectedCheckupImages.value = images;
+    isGalleryOpen.value = true;
 }
 
 watch(() => props.patient, (newPatient) => {
