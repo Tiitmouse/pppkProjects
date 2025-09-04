@@ -76,6 +76,7 @@
                 <v-card v-if="patient" elevation="7" variant="tonal" class="round-xl pa-4 mt-5">
                     <PrescriptionsList
                         v-if="selectedIllness"
+                        :key="selectedIllness.uuid"
                         :illness="selectedIllness"
                         @show-snackbar="showSnackbar"
                     />
@@ -191,7 +192,7 @@ async function loadPatient(id: number) {
     isLoading.value = true;
     try {
         const data = await getPatientById(id);
-        patient.value = data; // Directly assign the data object to keep all properties
+        patient.value = data; // Assign all data directly
         if (patient.value) {
             patientStore.viewPatient(patient.value);
         }
