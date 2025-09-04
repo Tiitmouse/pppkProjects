@@ -1,6 +1,5 @@
 package model
 
-// GetAllModels returns an array of all registered models
 func GetAllModels() []any {
 	return []any{
 		&User{},
@@ -10,5 +9,6 @@ func GetAllModels() []any {
 		&Prescription{},
 		&Medication{},
 		&Illness{},
+		&Image{},
 	}
 }

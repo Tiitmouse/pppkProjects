@@ -6,6 +6,7 @@ import (
 	"PatientManager/service"
 	"errors"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -38,6 +39,7 @@ func (cc *CheckupController) RegisterEndpoints(router *gin.RouterGroup) {
 		checkupRoutes.POST("", cc.create)
 		checkupRoutes.PUT("/:uuid", cc.update)
 		checkupRoutes.DELETE("/:uuid", cc.delete)
+		checkupRoutes.POST("/:uuid/images", cc.addImages)
 	}
 }
 
@@ -205,4 +207,57 @@ func (cc *CheckupController) delete(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+// addImages godoc
+//
+//	@Summary		Add images to a checkup
+//	@Description	Uploads and associates one or more images with a checkup.
+//	@Tags			checkup
+//	@Accept			mpfd
+//	@Produce		json
+//	@Param			uuid	path	string	true	"UUID of the checkup"
+//	@Param			files	formData	file	true	"Image files to upload"
+//	@Success		200		{object}	dto.CheckupDto
+//	@Failure		400
+//	@Failure		500
+//	@Router			/checkup/{uuid}/images [post]
+func (cc *CheckupController) addImages(c *gin.Context) {
+	checkupUuid := c.Param("uuid")
+	if checkupUuid == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Checkup UUID is required"})
+		return
+	}
+
+	form, err := c.MultipartForm()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	files := form.File["files"]
+
+	var imagePaths []string
+	uploadDir := "./uploads"
+	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
+		os.Mkdir(uploadDir, os.ModePerm)
+	}
+
+	for _, file := range files {
+		filename := uuid.New().String() + "-" + file.Filename
+		path := uploadDir + "/" + filename
+		if err := c.SaveUploadedFile(file, path); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
+			return
+		}
+		imagePaths = append(imagePaths, path)
+	}
+
+	updatedCheckup, err := cc.checkupService.AddImagesToCheckup(checkupUuid, imagePaths)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add images to checkup"})
+		return
+	}
+
+	var responseDto dto.CheckupDto
+	c.JSON(http.StatusOK, responseDto.FromModel(updatedCheckup))
 }

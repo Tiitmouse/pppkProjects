@@ -34,6 +34,7 @@ type Checkup struct {
 	MedicalRecord   MedicalRecord
 	IllnessID       *uint `gorm:"type:uint;null"`
 	Illness         Illness
+	Images          []Image `gorm:"foreignKey:CheckupID"`
 }
 
 func (c *Checkup) UpdateCheckup(checkup *Checkup) *Checkup {

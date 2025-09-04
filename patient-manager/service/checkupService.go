@@ -14,6 +14,7 @@ type ICheckupService interface {
 	Update(checkupUuid uuid.UUID, checkupUpdateData *model.Checkup) (*model.Checkup, error)
 	GetAll(recordUuid uuid.UUID) ([]model.Checkup, error)
 	Delete(checkupUuid uuid.UUID) error
+	AddImagesToCheckup(checkupUuid string, files []string) (*model.Checkup, error)
 }
 
 type CheckupService struct {
@@ -58,6 +59,7 @@ func (c *CheckupService) Create(checkup *model.Checkup, recordUuid string) (*mod
 func (c *CheckupService) findByUuid(checkupUuid uuid.UUID) (*model.Checkup, error) {
 	var checkup model.Checkup
 	rez := c.db.
+		Preload("Images").
 		Where("uuid = ?", checkupUuid).
 		First(&checkup)
 
@@ -125,7 +127,11 @@ func (c *CheckupService) GetAll(recordUuid uuid.UUID) ([]model.Checkup, error) {
 	}
 
 	var checkups []model.Checkup
-	rez := c.db.Preload("MedicalRecord").Where("medical_record_id = ?", medicalRecord.ID).Order("checkup_date desc").Find(&checkups)
+	rez := c.db.Preload("MedicalRecord").
+		Preload("Images").
+		Where("medical_record_id = ?", medicalRecord.ID).
+		Order("checkup_date desc").
+		Find(&checkups)
 	if rez.Error != nil {
 		c.logger.Errorf("Error fetching checkups for medical record ID %d: %v", medicalRecord.ID, rez.Error)
 		return nil, rez.Error
@@ -133,4 +139,32 @@ func (c *CheckupService) GetAll(recordUuid uuid.UUID) ([]model.Checkup, error) {
 
 	c.logger.Infof("Successfully fetched %d checkups for medical record uuid: %s", len(checkups), recordUuid)
 	return checkups, nil
+}
+
+func (c *CheckupService) AddImagesToCheckup(checkupUuid string, paths []string) (*model.Checkup, error) {
+	parsedUuid, err := uuid.Parse(checkupUuid)
+	if err != nil {
+		c.logger.Errorf("Failed to parse checkup UUID %s: %v", checkupUuid, err)
+		return nil, err
+	}
+
+	var checkup model.Checkup
+	if err := c.db.Where("uuid = ?", parsedUuid).First(&checkup).Error; err != nil {
+		c.logger.Errorf("Checkup with UUID %s not found: %v", checkupUuid, err)
+		return nil, err
+	}
+
+	for _, path := range paths {
+		image := model.Image{
+			Uuid:      uuid.New(),
+			Path:      path,
+			CheckupID: checkup.ID,
+		}
+		if err := c.db.Create(&image).Error; err != nil {
+			c.logger.Errorf("Failed to create image record for checkup %s: %v", checkupUuid, err)
+			return nil, err
+		}
+	}
+
+	return c.findByUuid(parsedUuid)
 }
