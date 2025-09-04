@@ -188,10 +188,10 @@ async function openEditOptions() {
         illnessesInEditMode.value = !illnessesInEditMode.value;
         const status = illnessesInEditMode.value ? 'enabled' : 'disabled';
         showSnackbar(`Illnesses editing ${status}.`, 'info');
-    } else if (selectedChoice) {
+    } else if (selectedChoice === 'Prescriptions') {
         await confirmDialog.value.Open({
-            Title: selectedChoice,
-            Message: `Functionality for "${selectedChoice}" is not yet implemented.`,
+            Title: 'Manage Prescriptions',
+            Message: `To manage prescriptions, please use the "View" button next to an illness in the illnesses list.`,
             Options: { noCancel: true }
         });
     }

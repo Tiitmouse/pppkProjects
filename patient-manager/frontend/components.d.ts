@@ -28,6 +28,7 @@ declare module 'vue' {
     OptionsDialog: typeof import('./src/components/optionsDialog.vue')['default']
     OwnerSide: typeof import('./src/components/OwnerSide.vue')['default']
     PatientEditForm: typeof import('./src/components/PatientEditForm.vue')['default']
+    PrescriptionsList: typeof import('./src/components/PrescriptionsList.vue')['default']
     RegistrationLogs: typeof import('./src/components/vehicleData/RegistrationLogs.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

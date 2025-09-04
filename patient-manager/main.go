@@ -40,6 +40,7 @@ func main() {
 	app.Provide(service.NewChekupService)
 	app.Provide(service.NewMedicationService)
 	app.Provide(service.NewIllnessService)
+	app.Provide(service.NewPrescriptionService)
 
 	zap.S().Infof("Database: http://localhost:8080")
 
