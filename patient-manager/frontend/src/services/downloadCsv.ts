@@ -9,7 +9,6 @@ export async function downloadAllPatientsData(): Promise<void> {
 
     const allData = [];
 
-    // Define a single set of headers for the entire CSV
     const headers = [
         "Record Type", "Patient First Name", "Patient Last Name", "Patient OIB",
         "Checkup UUID", "Checkup Date", "Checkup Type", "Checkup Illness ID",
@@ -20,7 +19,6 @@ export async function downloadAllPatientsData(): Promise<void> {
     allData.push(headers);
 
     for (const patient of patients) {
-        // Patient's core info
         const patientInfo = {
             "Record Type": "Patient",
             "Patient First Name": patient.firstName,
@@ -33,7 +31,6 @@ export async function downloadAllPatientsData(): Promise<void> {
         
         allData.push(Object.values(patientInfo));
 
-        // Fetch related data
         const checkups = await getCheckupsForRecord(patient.medicalRecordUuid);
         const illnesses = await getIllnessesForRecord(patient.medicalRecordUuid);
         
@@ -48,7 +45,6 @@ export async function downloadAllPatientsData(): Promise<void> {
             }
         }
 
-        // Add checkup rows
         for (const checkup of checkups) {
             const checkupRow = {
                 "Record Type": "Checkup",
@@ -65,7 +61,6 @@ export async function downloadAllPatientsData(): Promise<void> {
             allData.push(Object.values(checkupRow));
         }
 
-        // Add illness rows
         for (const illness of illnesses) {
             const illnessRow = {
                 "Record Type": "Illness",
@@ -82,7 +77,6 @@ export async function downloadAllPatientsData(): Promise<void> {
             allData.push(Object.values(illnessRow));
         }
 
-        // Add prescription rows
         for (const prescription of allPrescriptions) {
             const prescriptionRow = {
                 "Record Type": "Prescription",
