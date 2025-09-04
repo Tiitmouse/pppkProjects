@@ -1,10 +1,10 @@
 <template>
     <div class="center-container">
         <h1>
-            Dobrodošli u <b>ePrometna</b>
+            Welcome to <b>patientManager</b>
         </h1>
         <h3>
-            ~Za početak odaberite aktivnost iz izbornika
+            ~to get started choose an activity from the drawer
         </h3>
     </div>
 </template>
