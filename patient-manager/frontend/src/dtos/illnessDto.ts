@@ -1,4 +1,5 @@
 export interface IllnessListDto {
+    id: number;
     uuid: string;
     name: string;
     startDate: string;

@@ -35,6 +35,7 @@ func (dto *UpdateIllnessDto) ToModel() *model.Illness {
 }
 
 type IllnessListDto struct {
+	ID        uint       `json:"id"`
 	Uuid      string     `json:"uuid"`
 	Name      string     `json:"name"`
 	StartDate time.Time  `json:"startDate"`
@@ -43,6 +44,7 @@ type IllnessListDto struct {
 
 func (dto *IllnessListDto) FromModel(i *model.Illness) *IllnessListDto {
 	return &IllnessListDto{
+		ID:        i.ID,
 		Uuid:      i.Uuid.String(),
 		Name:      i.Name,
 		StartDate: i.StartDate,

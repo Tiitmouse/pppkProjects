@@ -39,6 +39,7 @@ type Checkup struct {
 func (c *Checkup) UpdateCheckup(checkup *Checkup) *Checkup {
 	c.CheckupDate = checkup.CheckupDate
 	c.Type = checkup.Type
+	c.IllnessID = checkup.IllnessID
 
 	return c
 }

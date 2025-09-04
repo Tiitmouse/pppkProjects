@@ -89,13 +89,14 @@ const formData = reactive({ name: '', startDate: '', endDate: '' });
 const rules = { required: (v: any) => !!v || 'This field is required.' };
 
 const baseHeaders = [
+    { title: 'ID', key: 'id', align: 'start', width: '15%' },
     { title: 'Name', key: 'name', align: 'start' },
     { title: 'Start Date', key: 'startDate' },
     { title: 'End Date', key: 'endDate' },
-] as const; // Added 'as const' here
+] as const;
 
 const headers = computed(() => props.isEditing
-    ? [...baseHeaders, { title: 'Actions', key: 'actions', sortable: false, align: 'end' }] as const // And here
+    ? [...baseHeaders, { title: 'Actions', key: 'actions', sortable: false, align: 'end' }] as const
     : baseHeaders
 );
 

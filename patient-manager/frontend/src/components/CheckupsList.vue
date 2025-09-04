@@ -104,7 +104,7 @@
                             </v-col>
                              <v-col cols="12">
                                 <v-text-field
-                                    v-model.number="editFormData.IllnessID"
+                                    v-model.number="editFormData.illnessId"
                                     label="Associated Illness ID (Optional)"
                                     type="number"
                                     clearable
@@ -130,7 +130,7 @@ import { ref, onMounted, reactive, computed } from 'vue';
 import type { PropType } from 'vue';
 import { getCheckupsForRecord, createCheckup, updateCheckup, deleteCheckup } from '@/services/patientService';
 import type { Patient } from '@/stores/patientStore';
-import type { CheckupDto, CreateCheckupDto, UpdateCheckupDto } from '@/dtos/checkupDto';
+import { type CheckupDto, type CreateCheckupDto, type UpdateCheckupDto } from '@/dtos/checkupDto';
 import { CheckupType } from '@/enums/checkupType';
 import CheckupDialog from '@/components/checkupDialog.vue';
 import ConfirmDialogue from '@/components/confirmDialog.vue';
@@ -163,21 +163,21 @@ const editFormData = reactive({
     checkupDate: '',
     checkupTime: '',
     type: '' as CheckupType | undefined,
-    IllnessID: undefined as number | undefined,
+    illnessId: undefined as number | undefined,
 });
 
 const baseHeaders = [
     { title: 'Date', key: 'checkupDate', align: 'start' },
     { title: 'Time', key: 'checkupTime', align: 'start', sortable: false },
-    { title: 'Associated Illness ID', key: 'IllnessID', align: 'end' },
-] as const; // Added 'as const' here
+    { title: 'Associated Illness ID', key: 'illnessId', align: 'end' },
+] as const;
 
 const checkupHeaders = computed(() => {
     if (props.isEditing) {
         return [
             ...baseHeaders,
             { title: 'Actions', key: 'actions', sortable: false, align: 'end' },
-        ] as const; // And also here
+        ] as const;
     }
     return baseHeaders;
 });
@@ -233,7 +233,7 @@ function openEditDialog(checkup: CheckupDto) {
     editFormData.checkupDate = date.toISOString().split('T')[0];
     editFormData.checkupTime = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
     editFormData.type = checkup.type;
-    editFormData.IllnessID = checkup.IllnessID;
+    editFormData.illnessId = checkup.illnessId;
     isEditDialogOpen.value = true;
 }
 
@@ -245,7 +245,7 @@ async function handleUpdateCheckup() {
     const payload: UpdateCheckupDto = {
         checkupDate: new Date(combinedDateTime).toISOString(),
         type: editFormData.type!,
-        IllnessID: editFormData.IllnessID,
+        illnessId: editFormData.illnessId,
     };
 
     try {
@@ -267,7 +267,6 @@ async function confirmAndDelete(checkup: CheckupDto) {
 
     if (isConfirmed) {
         try {
-            console.log(checkup.uuid)
             await deleteCheckup(checkup.uuid);
             emit('show-snackbar', 'Checkup deleted successfully.', 'success');
             await loadCheckups();
