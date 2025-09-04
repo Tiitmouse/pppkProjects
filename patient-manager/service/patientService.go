@@ -22,7 +22,7 @@ type IPatientService interface {
 	GetAllPatients() ([]dto.PatientDto, error)
 	GetPatientById(id uint) (dto.PatientDto, error)
 	CreatePatient(newPatient dto.NewPatientDto) (dto.PatientDto, error)
-	UpdatePatient(id uint, patientDto dto.PatientDto) (dto.PatientDto, error)
+	UpdatePatient(id uint, patientDto dto.UpdatePatientDto) (dto.PatientDto, error)
 	DeletePatient(id uint) error
 }
 
@@ -45,33 +45,17 @@ func (s *PatientService) GetAllPatients() ([]dto.PatientDto, error) {
 
 	var patientDtos []dto.PatientDto
 	for _, p := range patients {
-		patientDtos = append(patientDtos, dto.PatientDto{
-			ID:                p.ID,
-			FirstName:         p.FirstName,
-			LastName:          p.LastName,
-			OIB:               p.OIB,
-			BirthDate:         p.BirthDate,
-			Gender:            p.Gender,
-			MedicalRecordUuid: p.MedicalRecord.Uuid.String(),
-		})
+		patientDtos = append(patientDtos, dto.FromModel(&p))
 	}
 	return patientDtos, nil
 }
 
 func (s *PatientService) GetPatientById(id uint) (dto.PatientDto, error) {
-	patient, err := s.patientRepository.FindById(id)
+	patient, err := s.patientRepository.FindByIdWithDoctor(id)
 	if err != nil {
 		return dto.PatientDto{}, err
 	}
-	return dto.PatientDto{
-		ID:                patient.ID,
-		FirstName:         patient.FirstName,
-		LastName:          patient.LastName,
-		OIB:               patient.OIB,
-		BirthDate:         patient.BirthDate,
-		Gender:            patient.Gender,
-		MedicalRecordUuid: patient.MedicalRecord.Uuid.String(),
-	}, nil
+	return dto.FromModel(&patient), nil
 }
 
 func (s *PatientService) CreatePatient(newPatient dto.NewPatientDto) (dto.PatientDto, error) {
@@ -88,6 +72,7 @@ func (s *PatientService) CreatePatient(newPatient dto.NewPatientDto) (dto.Patien
 		OIB:       newPatient.OIB,
 		BirthDate: bod,
 		Gender:    newPatient.Gender,
+		DoctorID:  newPatient.DoctorID,
 	}
 
 	createdPatient, err := s.patientRepository.Create(patient)
@@ -105,21 +90,14 @@ func (s *PatientService) CreatePatient(newPatient dto.NewPatientDto) (dto.Patien
 	}
 
 	createdPatient.MedicalRecordID = createdmr.ID
+	createdPatient.MedicalRecord = *createdmr
 
 	s.patientRepository.Update(createdPatient)
 
-	return dto.PatientDto{
-		ID:                createdPatient.ID,
-		FirstName:         createdPatient.FirstName,
-		LastName:          createdPatient.LastName,
-		OIB:               createdPatient.OIB,
-		BirthDate:         createdPatient.BirthDate,
-		Gender:            createdPatient.Gender,
-		MedicalRecordUuid: createdPatient.MedicalRecord.Uuid.String(),
-	}, nil
+	return dto.FromModel(&createdPatient), nil
 }
 
-func (s *PatientService) UpdatePatient(id uint, patientDto dto.PatientDto) (dto.PatientDto, error) {
+func (s *PatientService) UpdatePatient(id uint, patientDto dto.UpdatePatientDto) (dto.PatientDto, error) {
 	patient, err := s.patientRepository.FindById(id)
 	if err != nil {
 		return dto.PatientDto{}, err
@@ -128,23 +106,23 @@ func (s *PatientService) UpdatePatient(id uint, patientDto dto.PatientDto) (dto.
 	patient.FirstName = patientDto.FirstName
 	patient.LastName = patientDto.LastName
 	patient.OIB = patientDto.OIB
-	patient.BirthDate = patientDto.BirthDate
+
+	bod, err := time.Parse(time.RFC3339, patientDto.BirthDate)
+	if err != nil {
+		zap.S().Errorf("Failed to parse BirthDate = %s, err = %+v", patientDto.BirthDate, err)
+		return dto.PatientDto{}, cerror.ErrBadDateFormat
+	}
+
+	patient.BirthDate = bod
 	patient.Gender = patientDto.Gender
+	patient.DoctorID = patientDto.DoctorID
 
 	updatedPatient, err := s.patientRepository.Update(patient)
 	if err != nil {
 		return dto.PatientDto{}, err
 	}
 
-	return dto.PatientDto{
-		ID:                updatedPatient.ID,
-		FirstName:         updatedPatient.FirstName,
-		LastName:          updatedPatient.LastName,
-		OIB:               updatedPatient.OIB,
-		BirthDate:         updatedPatient.BirthDate,
-		Gender:            updatedPatient.Gender,
-		MedicalRecordUuid: updatedPatient.MedicalRecord.Uuid.String(),
-	}, nil
+	return dto.FromModel(&updatedPatient), nil
 }
 
 func (s *PatientService) DeletePatient(id uint) error {

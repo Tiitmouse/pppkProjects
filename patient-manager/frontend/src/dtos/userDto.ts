@@ -8,3 +8,8 @@ export interface UserDto {
     email: string;
     role: string;
 }
+
+export interface DoctorDto {
+    firstName: string;
+    lastName: string;
+}

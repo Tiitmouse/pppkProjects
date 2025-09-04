@@ -1,4 +1,5 @@
 import type { UserRole } from '@/enums/userRole';
+import type { DoctorDto } from '@/dtos/userDto';
 
 export interface Patient {
   uuid: string;
@@ -8,5 +9,6 @@ export interface Patient {
   birthDate: string;
   gender: string;
   role: UserRole.Patient;
-  medicalRecordUuid: string
+  medicalRecordUuid: string;
+  doctor?: DoctorDto;
 }

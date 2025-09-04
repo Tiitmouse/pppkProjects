@@ -27,6 +27,7 @@ func (p *Patient) UpdatePatient(patient *Patient) *Patient {
 	p.LastName = patient.LastName
 	p.OIB = patient.OIB
 	p.Gender = patient.Gender
+	p.DoctorID = patient.DoctorID
 
 	return p
 }

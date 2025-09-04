@@ -130,7 +130,7 @@ func (c *PatientController) UpdatePatient(ctx *gin.Context) {
 		return
 	}
 
-	var patientDto dto.PatientDto
+	var patientDto dto.UpdatePatientDto
 	if err := ctx.ShouldBindJSON(&patientDto); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

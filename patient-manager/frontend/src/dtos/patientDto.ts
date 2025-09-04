@@ -1,7 +1,6 @@
 import type { Patient } from '@/models/patient';
 import { formatDate } from '@/utils/formatDate';
-import type { UserRole } from '@/enums/userRole';
-
+import type { DoctorDto } from './userDto';
 
 export interface PatientDto {
   id: number;
@@ -10,31 +9,27 @@ export interface PatientDto {
   oib: string;
   birthDate: string; 
   gender: string;
-  medicalRecordUuid: string
+  medicalRecordUuid: string;
+  doctor?: DoctorDto;
 }
 
 export interface NewPatientDto {
-  uuid: string
   firstName: string;
   lastName: string;
   oib: string;
   birthDate: string;
   gender: string;
-  role: UserRole.Patient
-  medicalRecordUuid: string
+  doctorId?: number;
 }
 
 export function createNewPatientDto(
     patient: Patient
 ): NewPatientDto {
     return {
-        uuid: patient.uuid,
         firstName: patient.firstName,
         lastName: patient.lastName,
         oib: patient.oib,
         gender: patient.gender,
         birthDate: formatDate(patient.birthDate),
-        role: patient.role,
-        medicalRecordUuid: patient.medicalRecordUuid
     };
 }

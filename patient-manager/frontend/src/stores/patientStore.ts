@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import type { DoctorDto } from '@/dtos/userDto';
 
 export interface Patient {
   id: number;
@@ -7,7 +8,8 @@ export interface Patient {
   oib: string;
   birthDate: string;
   gender: string;
-  medicalRecordUuid: string
+  medicalRecordUuid: string;
+  doctor?: DoctorDto;
 }
 
 export const usePatientStore = defineStore('patient', {

@@ -1,6 +1,6 @@
 import type { PatientDto, NewPatientDto } from '@/dtos/patientDto';
 import { createNewPatientDto } from '@/dtos/patientDto';
-
+import { UserRole } from '@/enums/userRole';
 import { formatDate } from '@/utils/formatDate';
 import axios from './axios';
 import type { CheckupDto, CreateCheckupDto, UpdateCheckupDto } from '@/dtos/checkupDto';
@@ -13,6 +13,15 @@ const BASE_URL_ILLNESSES = '/illnesses';
 const BASE_URL_PRESCRIPTIONS = '/prescriptions';
 const BASE_URL_MEDICATIONS = '/medications';
 
+export interface UpdatePatientDto {
+    firstName: string;
+    lastName: string;
+    oib: string;
+    birthDate: string;
+    gender: string;
+    doctorId?: number;
+}
+
 export async function getAllPatients(): Promise<PatientDto[]> {
   const response = await axios.get<PatientDto[]>(BASE_URL_PATIENTS);
   return response.data;
@@ -24,14 +33,15 @@ export async function getPatientById(id: number): Promise<PatientDto> {
 }
 
 export async function createPatient(newPatient: NewPatientDto): Promise<PatientDto> {
-  const patientDto = createNewPatientDto(newPatient);
-  patientDto.birthDate = formatDate(patientDto.birthDate);
-  console.log(patientDto)
+  const patientDto = {
+    ...newPatient,
+    birthDate: formatDate(newPatient.birthDate)
+  };
   const response = await axios.post<PatientDto>(BASE_URL_PATIENTS, patientDto);
   return response.data;
 }
 
-export async function updatePatient(id: number, patient: PatientDto): Promise<PatientDto> {
+export async function updatePatient(id: number, patient: UpdatePatientDto): Promise<PatientDto> {
   const response = await axios.put<PatientDto>(`${BASE_URL_PATIENTS}/${id}`, patient);
   return response.data;
 }

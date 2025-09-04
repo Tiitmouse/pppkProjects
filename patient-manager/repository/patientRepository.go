@@ -43,6 +43,12 @@ func (r *PatientRepository) Update(patient model.Patient) (model.Patient, error)
 	return patient, err
 }
 
+func (r *PatientRepository) FindByIdWithDoctor(id uint) (model.Patient, error) {
+	var patient model.Patient
+	err := r.db.Preload("Doctor").Preload("MedicalRecord").First(&patient, id).Error
+	return patient, err
+}
+
 func (r *PatientRepository) Delete(id uint) error {
 	return r.db.Delete(&model.Patient{}, id).Error
 }

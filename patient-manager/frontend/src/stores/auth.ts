@@ -31,7 +31,6 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
 
-    //NOTE: use this becouse router is undefined
     document.location.replace('/login')
   }
 

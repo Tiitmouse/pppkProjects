@@ -111,20 +111,28 @@
                     <span class="text-h5">Doctor Assignment</span>
                 </v-card-title>
                 <v-card-text>
-                    This patient is assigned to:
-                    <div class="font-weight-bold mt-2">
-                        Dr. {{ mockDoctor.firstName }} {{ mockDoctor.lastName }}
+                    <div v-if="patient?.doctor">
+                        This patient is assigned to:
+                        <div class="font-weight-bold mt-2">
+                            Dr. {{ patient.doctor.firstName }} {{ patient.doctor.lastName }}
+                        </div>
+                    </div>
+                    <div v-else>
+                        This patient is not assigned to a doctor.
                     </div>
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="primary" variant="elevated" @click="isDoctorDialogVisible = false">
-                        OK
+                    <v-btn v-if="!patient?.doctor" color="primary" variant="elevated" @click="assignToMe">
+                        Assign to me
+                    </v-btn>
+                    <v-btn color="grey" variant="elevated" @click="isDoctorDialogVisible = false">
+                        Close
                     </v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
-
+        
         <v-snackbar v-model="snackbar.visible" :color="snackbar.color" :timeout="3000">
             {{ snackbar.text }}
         </v-snackbar>
@@ -136,7 +144,7 @@ import { ref, onMounted, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { usePatientStore } from '@/stores/patientStore';
 import type { Patient } from '@/stores/patientStore';
-import { deletePatient, updatePatient } from '@/services/patientService';
+import { deletePatient, updatePatient, getPatientById } from '@/services/patientService';
 import OptionsDialogue from '@/components/optionsDialog.vue';
 import ConfirmDialogue from '@/components/confirmDialog.vue';
 import PatientEditForm from '@/components/PatientEditForm.vue';
@@ -144,9 +152,13 @@ import CheckupsList from '@/components/CheckupsList.vue';
 import IllnessesList from '@/components/IllnessesList.vue';
 import PrescriptionsList from '@/components/PrescriptionsList.vue';
 import type { IllnessListDto } from '@/dtos/illnessDto';
+import { useAuthStore } from '@/stores/auth';
+import type { UpdatePatientDto } from '@/services/patientService';
+import { UserRole } from '@/enums/userRole';
 
 const router = useRouter();
 const patientStore = usePatientStore();
+const authStore = useAuthStore();
 
 const patient = ref<Patient | null>(null);
 const isLoading = ref(true);
@@ -158,24 +170,38 @@ const selectedIllness = ref<IllnessListDto | null>(null);
 
 const editOptionsDialog = ref();
 const confirmDialog = ref();
-const isDoctorDialogVisible = ref(false);
 const isEditDialogOpen = ref(false);
+const isDoctorDialogVisible = ref(false);
 
-const mockDoctor = ref({ firstName: 'Ana', lastName: 'Anić' });
 const snackbar = reactive({
     visible: false,
     text: '',
     color: 'success' as 'success' | 'error' | 'info',
 });
 
-onMounted(() => {
+onMounted(async () => {
     if (patientStore.selectedPatient) {
-        patient.value = patientStore.selectedPatient;
+        await loadPatient(patientStore.selectedPatient.id);
     } else {
         router.push({ name: 'patient-list' });
     }
-    isLoading.value = false;
 });
+
+async function loadPatient(id: number) {
+    isLoading.value = true;
+    try {
+        const data = await getPatientById(id);
+        patient.value = data; // Directly assign the data object to keep all properties
+        if (patient.value) {
+            patientStore.viewPatient(patient.value);
+        }
+    } catch (error) {
+        showSnackbar('Failed to load patient data.', 'error');
+        console.error(error);
+    } finally {
+        isLoading.value = false;
+    }
+}
 
 function showSnackbar(text: string, color: 'success' | 'error' | 'info') {
     snackbar.text = text;
@@ -209,8 +235,16 @@ async function openEditOptions() {
 
 async function handleUpdatePatient(updatedPatientData: Patient) {
     isSaving.value = true;
+    if (!patient.value) return;
     try {
-        const updatedPatient = await updatePatient(updatedPatientData.id, updatedPatientData);
+        const payload: UpdatePatientDto = {
+            firstName: updatedPatientData.firstName,
+            lastName: updatedPatientData.lastName,
+            oib: updatedPatientData.oib,
+            birthDate: updatedPatientData.birthDate,
+            gender: updatedPatientData.gender
+        }
+        const updatedPatient = await updatePatient(patient.value.id, payload);
         patient.value = updatedPatient;
         patientStore.selectedPatient = updatedPatient;
         isEditDialogOpen.value = false;
@@ -241,6 +275,31 @@ async function confirmAndDelete() {
         } finally {
             isDeleting.value = false;
         }
+    }
+}
+
+async function assignToMe() {
+    if (!patient.value || !authStore.User || authStore.User.role !== UserRole.Doctor || !authStore.User.id) {
+        showSnackbar('Assignment failed: User is not a doctor or has no ID.', 'error');
+        return;
+    }
+
+    const payload: UpdatePatientDto = {
+        firstName: patient.value.firstName,
+        lastName: patient.value.lastName,
+        oib: patient.value.oib,
+        birthDate: patient.value.birthDate,
+        gender: patient.value.gender,
+        doctorId: authStore.User.id,
+    };
+    
+    try {
+        const updatedPatient = await updatePatient(patient.value.id, payload);
+        patient.value = updatedPatient;
+        isDoctorDialogVisible.value = false;
+        showSnackbar('Patient successfully assigned to you.', 'success');
+    } catch (error) {
+        showSnackbar('Failed to assign doctor.', 'error');
     }
 }
 

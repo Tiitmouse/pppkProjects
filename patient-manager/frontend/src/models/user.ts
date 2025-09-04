@@ -1,6 +1,7 @@
 import type { UserRole } from '@/enums/userRole';
 
 export interface User {
+  id?: number;
   uuid: string;
   firstName: string;
   lastName: string;

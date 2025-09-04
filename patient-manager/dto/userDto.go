@@ -10,6 +10,7 @@ import (
 )
 
 type UserDto struct {
+	ID        uint   `json:"id"`
 	Uuid      string `json:"uuid"`
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
@@ -40,9 +41,9 @@ func (dto *UserDto) ToModel() (*model.User, error) {
 	}, nil
 }
 
-// FromModel returns a dto from model struct
 func (dto UserDto) FromModel(m *model.User) UserDto {
 	dto = UserDto{
+		ID:        m.ID,
 		Uuid:      m.Uuid.String(),
 		FirstName: m.FirstName,
 		LastName:  m.LastName,
@@ -50,4 +51,9 @@ func (dto UserDto) FromModel(m *model.User) UserDto {
 		Role:      fmt.Sprint(m.Role),
 	}
 	return dto
+}
+
+type DoctorDto struct {
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
 }
