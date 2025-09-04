@@ -1,14 +1,25 @@
 <template>
     <v-container class="mt-4">
-        <v-text-field
-            v-model="search"
-            label="Search patients"
-            prepend-inner-icon="mdi-magnify"
-            variant="outlined"
-            hide-details
-            single-line
-            class="mb-4"
-        ></v-text-field>
+        <div class="d-flex align-center mb-4">
+            <v-text-field
+                v-model="search"
+                label="Search patients"
+                prepend-inner-icon="mdi-magnify"
+                variant="outlined"
+                hide-details
+                single-line
+                class="flex-grow-1"
+            ></v-text-field>
+            <v-btn
+                @click="downloadAllPatientsData"
+                color="info"
+                class="ml-4"
+                :loading="isDownloading"
+            >
+                <v-icon start>mdi-download</v-icon>
+                Download All
+            </v-btn>
+        </div>
 
         <v-data-table
             :headers="headers"
@@ -36,15 +47,19 @@
                 </div>
             </template>
         </v-data-table>
+        <v-snackbar v-model="snackbar.visible" :color="snackbar.color" :timeout="3000">
+            {{ snackbar.text }}
+        </v-snackbar>
     </v-container>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import * as patientService from '@/services/patientService';
 import { usePatientStore } from '@/stores/patientStore';
 import type { Patient } from '@/stores/patientStore';
+import { downloadAllPatientsData as downloadService } from '@/services/downloadCsv';
 
 const router = useRouter();
 const patientStore = usePatientStore();
@@ -60,6 +75,13 @@ const headers = [
 
 const patients = ref<Patient[]>([]);
 const search = ref('');
+const isDownloading = ref(false);
+
+const snackbar = reactive({
+    visible: false,
+    text: '',
+    color: 'success' as 'success' | 'error' | 'info',
+});
 
 const filteredPatients = computed(() => {
     if (!search.value) {
@@ -85,6 +107,25 @@ async function loadPatients() {
 function navigateToPatientDetails(patient: Patient) {
     patientStore.viewPatient(patient); 
     router.push({ name: 'patient-details' });
+}
+
+async function downloadAllPatientsData() {
+    isDownloading.value = true;
+    try {
+        await downloadService();
+        showSnackbar('All patient data downloaded successfully.', 'success');
+    } catch (error) {
+        console.error('Failed to download data:', error);
+        showSnackbar('Failed to download patient data.', 'error');
+    } finally {
+        isDownloading.value = false;
+    }
+}
+
+function showSnackbar(text: string, color: 'success' | 'error' | 'info') {
+    snackbar.text = text;
+    snackbar.color = color;
+    snackbar.visible = true;
 }
 
 onMounted(() => {
