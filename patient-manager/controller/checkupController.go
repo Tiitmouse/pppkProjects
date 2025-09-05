@@ -242,23 +242,21 @@ func (cc *CheckupController) addImages(c *gin.Context) {
 		return
 	}
 
-	uploadedCount, err := cc.bucketService.UploadMany(files)
+	uploadedPaths, err := cc.bucketService.UploadMany(files, checkupUuid)
 	if err != nil {
-		cc.logger.Errorf("Failed to upload files to bucket: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload images"})
-		return
+		cc.logger.Errorf("Failed to upload some or all files to bucket: %v", err)
+		if len(uploadedPaths) == 0 {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload images"})
+			return
+		}
+		cc.logger.Warnf("Proceeding with a partial upload. Successful files: %d", len(uploadedPaths))
 	}
-	cc.logger.Debugf("Successfully uploaded %d files", uploadedCount)
+	cc.logger.Debugf("Successfully uploaded %d files with new paths: %v", len(uploadedPaths), uploadedPaths)
 
-	var imagePaths []string
-	for _, file := range files {
-		imagePaths = append(imagePaths, filepath.Base(file.Filename))
-	}
-
-	updatedCheckup, err := cc.checkupService.AddImagesToCheckup(checkupUuid, imagePaths)
+	updatedCheckup, err := cc.checkupService.AddImagesToCheckup(checkupUuid, uploadedPaths)
 	if err != nil {
-		cc.logger.Errorf("Failed to add images to checkup: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add images to checkup"})
+		cc.logger.Errorf("Failed to add image paths to checkup: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to associate images with checkup"})
 		return
 	}
 
@@ -266,6 +264,19 @@ func (cc *CheckupController) addImages(c *gin.Context) {
 	c.JSON(http.StatusOK, responseDto.FromModel(updatedCheckup))
 }
 
+// GetImageByName godoc
+// @Summary      Get an image by name
+// @Description  Retrieves and serves an image file from storage by its unique name.
+// @Tags         checkup
+// @Produce      image/png
+// @Produce      image/jpeg
+// @Produce      application/octet-stream
+// @Success      200  {file} file
+// @Failure      400
+// @Failure      404
+// @Failure      500
+// @Param        name path string true "The unique name of the image file (e.g., {checkupUuid}_{originalFilename})"
+// @Router       /checkup/image/{name} [get]
 func (cc *CheckupController) GetImageByName(c *gin.Context) {
 	name := c.Param("name")
 
@@ -299,5 +310,4 @@ func (cc *CheckupController) GetImageByName(c *gin.Context) {
 	if err != nil {
 		zap.S().Errorf("Failed to write image to response stream: %v", err)
 	}
-
 }

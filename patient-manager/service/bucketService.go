@@ -15,9 +15,8 @@ import (
 )
 
 type IbucketService interface {
-	GetFiles() ([]io.ReadCloser, error)
 	CheckBucket(name string) bool
-	UploadMany(files []*multipart.FileHeader) (int, error)
+	UploadMany(files []*multipart.FileHeader, namePrefix string) ([]string, error)
 	GetFile(name string) (io.ReadCloser, error)
 	DeleteMany(names []string) error
 }
@@ -75,37 +74,6 @@ func setup() error {
 	return nil
 }
 
-func (b *MinioBucket) GetFiles() ([]io.ReadCloser, error) {
-	b.lock.Lock()
-	defer b.lock.Unlock()
-	ctx := context.Background()
-	readers := make([]io.ReadCloser, 0)
-	objectCh := b.minioClientInstance.ListObjects(ctx, bucketName, minio.ListObjectsOptions{})
-
-	for file := range objectCh {
-		if file.Err != nil {
-			zap.S().Errorf("Failed to list object: %v", file.Err)
-			for _, r := range readers {
-				_ = r.Close()
-			}
-			return nil, file.Err
-		}
-
-		zap.S().Debugf("Retrieving object with name %s", file.Key)
-		reader, err := b.minioClientInstance.GetObject(ctx, bucketName, file.Key, minio.GetObjectOptions{})
-		if err != nil {
-			zap.S().Errorf("Failed to get object '%s': %v", file.Key, err)
-			for _, r := range readers {
-				_ = r.Close()
-			}
-			return nil, err
-		}
-		readers = append(readers, reader)
-	}
-
-	return readers, nil
-}
-
 func (b *MinioBucket) GetFile(name string) (io.ReadCloser, error) {
 	b.lock.Lock()
 	defer b.lock.Unlock()
@@ -131,39 +99,51 @@ func (b *MinioBucket) CheckBucket(name string) bool {
 	return ret
 }
 
-func (b *MinioBucket) UploadMany(files []*multipart.FileHeader) (int, error) {
+func (b *MinioBucket) UploadMany(files []*multipart.FileHeader, namePrefix string) ([]string, error) {
 	b.lock.Lock()
 	defer b.lock.Unlock()
 
-	zap.S().Debugf("Starting file upload, files %d", len(files))
+	zap.S().Debugf("Starting file upload for prefix %s, files %d", namePrefix, len(files))
 
-	count := 0
+	var uploadedPaths []string
+	var uploadErrors []string
+
 	for _, file := range files {
 		fileReader, err := file.Open()
 		if err != nil {
-			zap.S().Errorf("Failed to open file header err = %v", err)
+			msg := fmt.Sprintf("failed to open file header for %s: %v", file.Filename, err)
+			zap.S().Error(msg)
+			uploadErrors = append(uploadErrors, msg)
 			continue
 		}
 		defer fileReader.Close()
 
-		zap.S().Debugf("Uploading file name %s", file.Filename)
-		filename := filepath.Base(file.Filename)
+		originalFilename := filepath.Base(file.Filename)
+		newFilename := fmt.Sprintf("%s_%s", namePrefix, originalFilename)
+		zap.S().Debugf("Uploading file with new name: %s", newFilename)
 
 		_, err = b.minioClientInstance.PutObject(
 			context.Background(),
 			bucketName,
-			filename,
+			newFilename,
 			fileReader,
 			file.Size,
-			minio.PutObjectOptions{ContentType: file.Header.Get("Content-Type")})
+			minio.PutObjectOptions{ContentType: file.Header.Get("Content-Type")},
+		)
 		if err != nil {
-			zap.S().Errorf("Failed to upload err = %v", err)
+			msg := fmt.Sprintf("failed to upload %s: %v", newFilename, err)
+			zap.S().Error(msg)
+			uploadErrors = append(uploadErrors, msg)
 			continue
 		}
-		count++
+		uploadedPaths = append(uploadedPaths, newFilename)
 	}
 
-	return count, nil
+	if len(uploadErrors) > 0 {
+		return uploadedPaths, fmt.Errorf("encountered errors during upload: %v", uploadErrors)
+	}
+
+	return uploadedPaths, nil
 }
 
 func (b *MinioBucket) DeleteMany(names []string) error {
