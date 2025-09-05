@@ -97,7 +97,7 @@ func (m *MedicalRecordController) update(c *gin.Context) {
 	}
 
 	data, err := m.MedicalRecordService.Read(recordUuid.String())
-	data.DoctorID = 1 // TODO: read new doctor id
+	data.DoctorID = 1
 
 	record, err := m.MedicalRecordService.Update(recordUuid, data)
 	if err != nil {

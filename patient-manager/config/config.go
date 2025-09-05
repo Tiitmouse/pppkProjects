@@ -1,7 +1,6 @@
 package config
 
 const (
-	_CONFIG_FILE                = "ePrometna.json"
 	LOG_FILE                    = "ePrometna.log"
 	LOG_FILE_MAX_SIZE           = 2
 	LOG_FILE_MAX_AGE            = 30
@@ -14,11 +13,15 @@ const (
 var AppConfig *AppConfiguration = nil
 
 type AppConfiguration struct {
-	Env          environment
-	Port         int
-	DbConnection string
-	AccessKey    string
-	RefreshKey   string
+	Env                environment
+	Port               int
+	DbConnection       string
+	AccessKey          string
+	RefreshKey         string
+	MIOEndpoint        string
+	MIOAccessKeyID     string
+	MIOSecretAccessKey string
+	UseSSL             bool
 }
 
 type environment = string

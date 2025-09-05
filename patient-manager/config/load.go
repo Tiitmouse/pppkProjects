@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/joho/godotenv"
+	"go.uber.org/zap"
 )
 
 // LoadConfig loads in program configuration should be a first thing called in the program
@@ -32,6 +33,11 @@ func loadData() error {
 	conf.AccessKey = loadString("ACCESS_KEY")
 	conf.RefreshKey = loadString("REFRESH_KEY")
 	conf.Port = loadInt("PORT")
+
+	conf.MIOEndpoint = loadString("MINIO_ENDPOINT")
+	conf.MIOAccessKeyID = loadString("MINIO_ACCESS_KEY_ID")
+	conf.MIOSecretAccessKey = loadString("MINIO_SECRET_ACCESS_KEY")
+	conf.UseSSL = loadBool("MINIO_USE_SSL")
 
 	if conf.AccessKey == "" {
 		return fmt.Errorf("ACCESS_KEY environment variable is required")
@@ -90,4 +96,12 @@ func LoadEnv() environment {
 		fmt.Printf("Bad ENV value (%s) must be: (%s,%s,%s) \n", rez, Prod, Dev, Test)
 		return Prod
 	}
+}
+
+func loadBool(name string) bool {
+	rez := os.Getenv(name)
+	if rez == "" {
+		zap.S().Errorf("Env variable %s is empty", name)
+	}
+	return rez == "development"
 }

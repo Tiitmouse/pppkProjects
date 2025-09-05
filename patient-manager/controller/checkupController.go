@@ -6,7 +6,6 @@ import (
 	"PatientManager/service"
 	"errors"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -17,15 +16,17 @@ import (
 type CheckupController struct {
 	checkupService service.ICheckupService
 	logger         *zap.SugaredLogger
+	bucketService  service.IbucketService
 }
 
 func NewCheckupController() *CheckupController {
 	var controller *CheckupController
 
-	app.Invoke(func(checkupService service.ICheckupService, logger *zap.SugaredLogger) {
+	app.Invoke(func(checkupService service.ICheckupService, logger *zap.SugaredLogger, bucketService service.IbucketService) {
 		controller = &CheckupController{
 			checkupService: checkupService,
 			logger:         logger,
+			bucketService:  bucketService,
 		}
 	})
 
@@ -232,29 +233,33 @@ func (cc *CheckupController) addImages(c *gin.Context) {
 
 	form, err := c.MultipartForm()
 	if err != nil {
+		cc.logger.Errorf("Error processing multipart form: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	files := form.File["files"]
 
-	var imagePaths []string
-	uploadDir := "./uploads"
-	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
-		os.Mkdir(uploadDir, os.ModePerm)
+	if len(files) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No files uploaded"})
+		return
 	}
 
+	uploadedCount, err := cc.bucketService.UploadMany(files)
+	if err != nil {
+		cc.logger.Errorf("Failed to upload files to bucket: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload images"})
+		return
+	}
+	cc.logger.Debugf("Successfully uploaded %d files", uploadedCount)
+
+	var imagePaths []string
 	for _, file := range files {
-		filename := uuid.New().String() + "-" + file.Filename
-		path := uploadDir + "/" + filename
-		if err := c.SaveUploadedFile(file, path); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
-			return
-		}
-		imagePaths = append(imagePaths, path)
+		imagePaths = append(imagePaths, file.Filename)
 	}
 
 	updatedCheckup, err := cc.checkupService.AddImagesToCheckup(checkupUuid, imagePaths)
 	if err != nil {
+		cc.logger.Errorf("Failed to add images to checkup: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add images to checkup"})
 		return
 	}
