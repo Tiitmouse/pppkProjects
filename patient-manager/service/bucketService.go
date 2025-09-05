@@ -18,6 +18,7 @@ type IbucketService interface {
 	GetFiles() ([]io.ReadCloser, error)
 	CheckBucket(name string) bool
 	UploadMany(files []*multipart.FileHeader) (int, error)
+	GetFile(name string) (io.ReadCloser, error)
 }
 
 var bucket *MinioBucket
@@ -102,6 +103,20 @@ func (b *MinioBucket) GetFiles() ([]io.ReadCloser, error) {
 	}
 
 	return readers, nil
+}
+
+func (b *MinioBucket) GetFile(name string) (io.ReadCloser, error) {
+	b.lock.Lock()
+	defer b.lock.Unlock()
+	ctx := context.Background()
+
+	zap.S().Debugf("Retrieving object with name %s", name)
+	reader, err := b.minioClientInstance.GetObject(ctx, bucketName, name, minio.GetObjectOptions{})
+	if err != nil {
+		zap.S().Errorf("Failed to get object '%s': %v", name, err)
+		return nil, err
+	}
+	return reader, nil
 }
 
 func (b *MinioBucket) CheckBucket(name string) bool {

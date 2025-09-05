@@ -32,7 +32,7 @@
                     <div v-if="item.images && item.images.length > 0">
                         <v-btn icon @click="openGallery(item.images)" size="small" variant="tonal" color="info"
                             class="me-2">
-                            <v-icon color="info">mdi-image-outline</v-icon>
+                            <v-icon color="info">mdi-image-multiple-outline</v-icon>
                         </v-btn>
                     </div>
                     <div v-else>
@@ -91,12 +91,20 @@
                                 <v-file-input v-model="newFiles" label="Add More Images" prepend-icon="mdi-camera"
                                     multiple accept="image/*" clearable></v-file-input>
                             </v-col>
-                            <v-col cols="12">
-                                <div class="d-flex flex-wrap">
-                                    <div v-for="image in existingImages" :key="image.uuid" class="ma-2">
-                                        <v-img :src="getImageUrl(image.path)" height="100" width="100"></v-img>
-                                        <v-btn small color="error" class="mt-1"
-                                            @click="deleteImage(image)">Delete</v-btn>
+                            <v-col v-if="existingImages.length > 0" cols="12">
+                                <p class="mb-2 text-subtitle-1">Existing Images</p>
+                                <div class="d-flex flex-wrap ga-2">
+                                    <div v-for="image in existingImages" :key="image.uuid" class="d-flex flex-column align-center">
+                                        <v-img :src="'http://localhost:8098/api/checkup/image/' + image.path" height="100" width="100" cover aspect-ratio="1" class="rounded">
+                                            <template v-slot:placeholder>
+                                                <div class="d-flex align-center justify-center fill-height">
+                                                    <v-progress-circular indeterminate color="grey-lighten-4"></v-progress-circular>
+                                                </div>
+                                            </template>
+                                        </v-img>
+                                        <v-btn size="small" color="error" class="mt-1" variant="tonal" @click="deleteImage(image)">
+                                            <v-icon>mdi-delete</v-icon>
+                                        </v-btn>
                                     </div>
                                 </div>
                             </v-col>
@@ -117,15 +125,23 @@
 
     <v-dialog v-model="isGalleryOpen" max-width="800px">
         <v-card>
-            <v-carousel cycle hide-delimiter-background show-arrows-on-hover>
-                <v-carousel-item v-for="(image, i) in selectedCheckupImages" :key="i">
-                    <img :src="getImageUrl(image.path)" style="width: 100%; height: 100%; object-fit: contain;">
+            <v-toolbar color="primary" density="compact">
+                <v-toolbar-title>Image Gallery</v-toolbar-title>
+                <v-spacer></v-spacer>
+                <v-btn icon @click="isGalleryOpen = false">
+                    <v-icon>mdi-close</v-icon>
+                </v-btn>
+            </v-toolbar>
+            <v-carousel v-if="selectedCheckupImages.length > 0" show-arrows="hover" hide-delimiters>
+                <v-carousel-item 
+                    v-for="image in selectedCheckupImages" 
+                    :key="image.uuid"
+                    :src="'http://localhost:8098/api/checkup/image/' + image.path">
                 </v-carousel-item>
             </v-carousel>
-            <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="primary" @click="isGalleryOpen = false">Close</v-btn>
-            </v-card-actions>
+             <v-card-text v-else class="text-center pa-10">
+                <p>No images available for this checkup.</p>
+            </v-card-text>
         </v-card>
     </v-dialog>
 </template>
@@ -211,11 +227,6 @@ function getFullCheckupTypeName(typeValue: CheckupType): string {
     return typeValue;
 }
 
-function getImageUrl(path: string): string {
-    const backendUrl = 'http://localhost:8098';
-    const cleanPath = path.replace('./', '').replace(/^\//, '');
-    return `${backendUrl}/${cleanPath}`;
-}
 
 async function loadCheckups() {
     if (props.patient?.medicalRecordUuid) {

@@ -127,3 +127,8 @@ export async function getAllMedications(): Promise<MedicationListDto[]> {
   const response = await axios.get<MedicationListDto[]>(BASE_URL_MEDICATIONS);
   return response.data;
 }
+
+//IMAGES
+export function getCheckupImageUrl(imageName: string): string {
+    return `/checkup/image/${imageName}`;
+}

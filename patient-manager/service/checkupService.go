@@ -73,6 +73,7 @@ func (c *CheckupService) findByUuid(checkupUuid uuid.UUID) (*model.Checkup, erro
 		}
 		return nil, rez.Error
 	}
+
 	return &checkup, nil
 }
 

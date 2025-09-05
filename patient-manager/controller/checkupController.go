@@ -5,11 +5,14 @@ import (
 	"PatientManager/dto"
 	"PatientManager/service"
 	"errors"
+	"io"
+	"mime"
 	"net/http"
 	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/minio/minio-go"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -42,6 +45,7 @@ func (cc *CheckupController) RegisterEndpoints(router *gin.RouterGroup) {
 		checkupRoutes.PUT("/:uuid", cc.update)
 		checkupRoutes.DELETE("/:uuid", cc.delete)
 		checkupRoutes.POST("/:uuid/images", cc.addImages)
+		checkupRoutes.GET("/image/:name", cc.GetImageByName)
 	}
 }
 
@@ -260,4 +264,40 @@ func (cc *CheckupController) addImages(c *gin.Context) {
 
 	var responseDto dto.CheckupDto
 	c.JSON(http.StatusOK, responseDto.FromModel(updatedCheckup))
+}
+
+func (cc *CheckupController) GetImageByName(c *gin.Context) {
+	name := c.Param("name")
+
+	if name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "empty name"})
+		return
+	}
+
+	reader, err := cc.bucketService.GetFile(name)
+	if err != nil {
+		errResponse := minio.ToErrorResponse(err)
+		if errResponse.Code == "NoSuchKey" {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Image not found"})
+			return
+		}
+
+		zap.S().Errorf("Failed to retrieve file from bucket: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not retrieve file"})
+		return
+	}
+	defer reader.Close()
+
+	ext := filepath.Ext(name)
+	contentType := mime.TypeByExtension(ext)
+	if contentType == "" {
+		contentType = "application/octet-stream"
+	}
+	c.Header("Content-Type", contentType)
+
+	_, err = io.Copy(c.Writer, reader)
+	if err != nil {
+		zap.S().Errorf("Failed to write image to response stream: %v", err)
+	}
+
 }

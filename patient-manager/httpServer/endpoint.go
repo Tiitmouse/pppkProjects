@@ -2,13 +2,11 @@ package httpServer
 
 import (
 	"PatientManager/controller"
-	"PatientManager/util/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 func setupHandlers(router *gin.Engine) {
-	router.Use(middleware.CorsHeader())
 
 	router.Static("/uploads", "./uploads")
 
