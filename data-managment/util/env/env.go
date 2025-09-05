@@ -11,9 +11,9 @@ import (
 // Variables
 
 var MongoDb_Conn_String = ""
-var Endpoint = ""        // TODO: add endpoint
-var AccessKeyID = ""     // TODO: add accessKeyID
-var SecretAccessKey = "" // TODO: add secretAccessKey
+var Endpoint = ""
+var AccessKeyID = ""
+var SecretAccessKey = ""
 var UseSSL = false
 
 // Variable names
