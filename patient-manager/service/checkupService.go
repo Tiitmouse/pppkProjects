@@ -100,19 +100,42 @@ func (c *CheckupService) Update(checkupUuid uuid.UUID, checkupUpdateData *model.
 func (c *CheckupService) Delete(checkupUuid uuid.UUID) error {
 	c.logger.Infof("Attempting to delete checkup with UUID: %s", checkupUuid)
 
-	rez := c.db.Where("uuid = ?", checkupUuid).Delete(&model.Checkup{})
+	checkup, err := c.findByUuid(checkupUuid)
+	if err != nil {
+		return err
+	}
 
+	if len(checkup.Images) == 0 {
+		c.logger.Infof("THERE WERE NO IMAGES")
+	}
+
+	if len(checkup.Images) > 0 {
+		c.logger.Infof("Checkup %s has %d images to delete from Minio.", checkupUuid, len(checkup.Images))
+		var imagePaths []string
+		for _, image := range checkup.Images {
+			imagePaths = append(imagePaths, image.Path)
+		}
+
+		err = c.bucketService.DeleteMany(imagePaths)
+		if err != nil {
+			c.logger.Errorf("Failed to delete images from bucket for checkup %s: %v", checkupUuid, err)
+			return err
+		}
+		c.logger.Infof("Successfully deleted images from bucket for checkup %s", checkupUuid)
+	}
+
+	rez := c.db.Delete(checkup)
 	if rez.Error != nil {
-		c.logger.Errorf("Error deleting checkup with UUID %s: %v", checkupUuid, rez.Error)
+		c.logger.Errorf("Error deleting checkup record from DB with UUID %s: %v", checkupUuid, rez.Error)
 		return rez.Error
 	}
 
 	if rez.RowsAffected == 0 {
-		c.logger.Warnf("No checkup found with UUID %s to delete", checkupUuid)
+		c.logger.Warnf("No checkup found with UUID %s to delete during the final delete operation", checkupUuid)
 		return gorm.ErrRecordNotFound
 	}
 
-	c.logger.Infof("Successfully checkup with UUID: %s", checkupUuid)
+	c.logger.Infof("Successfully deleted checkup with UUID: %s", checkupUuid)
 	return nil
 }
 

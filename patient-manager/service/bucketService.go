@@ -19,6 +19,7 @@ type IbucketService interface {
 	CheckBucket(name string) bool
 	UploadMany(files []*multipart.FileHeader) (int, error)
 	GetFile(name string) (io.ReadCloser, error)
+	DeleteMany(names []string) error
 }
 
 var bucket *MinioBucket
@@ -163,4 +164,45 @@ func (b *MinioBucket) UploadMany(files []*multipart.FileHeader) (int, error) {
 	}
 
 	return count, nil
+}
+
+func (b *MinioBucket) DeleteMany(names []string) error {
+	b.lock.Lock()
+	defer b.lock.Unlock()
+
+	if len(names) == 0 {
+		return nil
+	}
+
+	zap.S().Debugf("Attempting to delete %d objects from bucket '%s'", len(names), bucketName)
+
+	objectsCh := make(chan minio.ObjectInfo)
+	go func() {
+		defer close(objectsCh)
+		for _, name := range names {
+			objectsCh <- minio.ObjectInfo{Key: name}
+		}
+	}()
+
+	opts := minio.RemoveObjectsOptions{
+		GovernanceBypass: true,
+	}
+
+	errorCh := b.minioClientInstance.RemoveObjects(context.Background(), bucketName, objectsCh, opts)
+
+	var deleteErrors []string
+	for e := range errorCh {
+		if e.Err != nil {
+			errMsg := fmt.Sprintf("Failed to remove object '%s', error: %v", e.ObjectName, e.Err)
+			zap.S().Error(errMsg)
+			deleteErrors = append(deleteErrors, errMsg)
+		}
+	}
+
+	if len(deleteErrors) > 0 {
+		return fmt.Errorf("encountered errors during object deletion: %v", deleteErrors)
+	}
+
+	zap.S().Infof("Successfully deleted %d objects from bucket '%s'", len(names), bucketName)
+	return nil
 }
