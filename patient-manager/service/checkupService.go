@@ -3,7 +3,6 @@ package service
 import (
 	"PatientManager/app"
 	"PatientManager/model"
-	"os"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -16,20 +15,21 @@ type ICheckupService interface {
 	GetAll(recordUuid uuid.UUID) ([]model.Checkup, error)
 	Delete(checkupUuid uuid.UUID) error
 	AddImagesToCheckup(checkupUuid string, files []string) (*model.Checkup, error)
-	DeleteImage(imageUuid string) error
 }
 
 type CheckupService struct {
-	db     *gorm.DB
-	logger *zap.SugaredLogger
+	db            *gorm.DB
+	logger        *zap.SugaredLogger
+	bucketService IbucketService
 }
 
 func NewChekupService() ICheckupService {
 	var service ICheckupService
-	app.Invoke(func(db *gorm.DB, logger *zap.SugaredLogger) {
+	app.Invoke(func(db *gorm.DB, logger *zap.SugaredLogger, bucketService IbucketService) {
 		service = &CheckupService{
-			db:     db,
-			logger: logger,
+			db:            db,
+			logger:        logger,
+			bucketService: bucketService,
 		}
 	})
 
@@ -169,16 +169,4 @@ func (c *CheckupService) AddImagesToCheckup(checkupUuid string, paths []string) 
 	}
 
 	return c.findByUuid(parsedUuid)
-}
-
-func (c *CheckupService) DeleteImage(imageUuid string) error {
-	var image model.Image
-	if err := c.db.Where("uuid = ?", imageUuid).First(&image).Error; err != nil {
-		return err
-	}
-	if err := os.Remove(image.Path); err != nil {
-		c.logger.Warnf("Failed to delete image file from disk: %v", err)
-	}
-
-	return c.db.Delete(&image).Error
 }

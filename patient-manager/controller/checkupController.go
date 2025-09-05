@@ -6,6 +6,7 @@ import (
 	"PatientManager/service"
 	"errors"
 	"net/http"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -41,23 +42,20 @@ func (cc *CheckupController) RegisterEndpoints(router *gin.RouterGroup) {
 		checkupRoutes.PUT("/:uuid", cc.update)
 		checkupRoutes.DELETE("/:uuid", cc.delete)
 		checkupRoutes.POST("/:uuid/images", cc.addImages)
-		checkupRoutes.DELETE("/:uuid/images/:imageUuid", cc.deleteImage)
 	}
 }
 
-// Add this new controller method
 // getAllByRecord godoc
-//
-//	@Summary		Get all checkups for a medical record
-//	@Description	Retrieves a list of all checkups associated with a specific medical record UUID.
-//	@Tags			checkup
-//	@Produce		json
-//	@Success		200	{array}	dto.CheckupDto
-//	@Failure		400
-//	@Failure		404
-//	@Failure		500
-//	@Param			recordUuid	path	string	true	"UUID of the medical record"
-//	@Router			/checkup/record/{recordUuid} [get]
+// @Summary		Get all checkups for a medical record
+// @Description	Retrieves a list of all checkups associated with a specific medical record UUID.
+// @Tags			checkup
+// @Produce		json
+// @Success		200	{array}	dto.CheckupDto
+// @Failure		400
+// @Failure		404
+// @Failure		500
+// @Param			recordUuid	path	string	true	"UUID of the medical record"
+// @Router			/checkup/record/{recordUuid} [get]
 func (cc *CheckupController) getAllByRecord(c *gin.Context) {
 	recordUuid, err := uuid.Parse(c.Param("recordUuid"))
 	if err != nil {
@@ -88,17 +86,16 @@ func (cc *CheckupController) getAllByRecord(c *gin.Context) {
 }
 
 // create godoc
-//
-//	@Summary		Create a new checkup
-//	@Description	Creates a new checkup associated with a medical record.
-//	@Tags			checkup
-//	@Accept			json
-//	@Produce		json
-//	@Success		201	{object}	dto.CheckupDto
-//	@Failure		400
-//	@Failure		500
-//	@Param			model	body	dto.CreateCheckupDto	true	"Data for creating a new checkup"
-//	@Router			/checkup [post]
+// @Summary		Create a new checkup
+// @Description	Creates a new checkup associated with a medical record.
+// @Tags			checkup
+// @Accept			json
+// @Produce		json
+// @Success		201	{object}	dto.CheckupDto
+// @Failure		400
+// @Failure		500
+// @Param			model	body	dto.CreateCheckupDto	true	"Data for creating a new checkup"
+// @Router			/checkup [post]
 func (cc *CheckupController) create(c *gin.Context) {
 	var createDto dto.CreateCheckupDto
 	if err := c.ShouldBindJSON(&createDto); err != nil {
@@ -126,19 +123,18 @@ func (cc *CheckupController) create(c *gin.Context) {
 }
 
 // update godoc
-//
-//	@Summary		Update an existing checkup
-//	@Description	Updates the details of a specific checkup by its UUID.
-//	@Tags			checkup
-//	@Accept			json
-//	@Produce		json
-//	@Success		200	{object}	dto.CheckupDto
-//	@Failure		400
-//	@Failure		404
-//	@Failure		500
-//	@Param			uuid	path	string			true	"UUID of the checkup to be updated"
-//	@Param			model	body	dto.CheckupDto	true	"Data for updating the checkup"
-//	@Router			/checkup/{uuid} [put]
+// @Summary		Update an existing checkup
+// @Description	Updates the details of a specific checkup by its UUID.
+// @Tags			checkup
+// @Accept			json
+// @Produce		json
+// @Success		200	{object}	dto.CheckupDto
+// @Failure		400
+// @Failure		404
+// @Failure		500
+// @Param			uuid	path	string			true	"UUID of the checkup to be updated"
+// @Param			model	body	dto.CheckupDto	true	"Data for updating the checkup"
+// @Router			/checkup/{uuid} [put]
 func (cc *CheckupController) update(c *gin.Context) {
 	checkupUuid, err := uuid.Parse(c.Param("uuid"))
 	if err != nil {
@@ -178,16 +174,15 @@ func (cc *CheckupController) update(c *gin.Context) {
 }
 
 // delete godoc
-//
-//	@Summary		Delete a checkup
-//	@Description	Deletes a checkup by its UUID.
-//	@Tags			checkup
-//	@Success		204
-//	@Failure		400
-//	@Failure		404
-//	@Failure		500
-//	@Param			uuid	path	string	true	"UUID of the checkup to be deleted"
-//	@Router			/checkup/{uuid} [delete]
+// @Summary		Delete a checkup
+// @Description	Deletes a checkup by its UUID.
+// @Tags			checkup
+// @Success		204
+// @Failure		400
+// @Failure		404
+// @Failure		500
+// @Param			uuid	path	string	true	"UUID of the checkup to be deleted"
+// @Router			/checkup/{uuid} [delete]
 func (cc *CheckupController) delete(c *gin.Context) {
 	checkupUuid, err := uuid.Parse(c.Param("uuid"))
 	if err != nil {
@@ -212,18 +207,17 @@ func (cc *CheckupController) delete(c *gin.Context) {
 }
 
 // addImages godoc
-//
-//	@Summary		Add images to a checkup
-//	@Description	Uploads and associates one or more images with a checkup.
-//	@Tags			checkup
-//	@Accept			mpfd
-//	@Produce		json
-//	@Param			uuid	path	string	true	"UUID of the checkup"
-//	@Param			files	formData	file	true	"Image files to upload"
-//	@Success		200		{object}	dto.CheckupDto
-//	@Failure		400
-//	@Failure		500
-//	@Router			/checkup/{uuid}/images [post]
+// @Summary		Add images to a checkup
+// @Description	Uploads and associates one or more images with a checkup.
+// @Tags			checkup
+// @Accept			mpfd
+// @Produce		json
+// @Param			uuid	path	string	true	"UUID of the checkup"
+// @Param			files	formData	file	true	"Image files to upload"
+// @Success		200		{object}	dto.CheckupDto
+// @Failure		400
+// @Failure		500
+// @Router			/checkup/{uuid}/images [post]
 func (cc *CheckupController) addImages(c *gin.Context) {
 	checkupUuid := c.Param("uuid")
 	if checkupUuid == "" {
@@ -254,7 +248,7 @@ func (cc *CheckupController) addImages(c *gin.Context) {
 
 	var imagePaths []string
 	for _, file := range files {
-		imagePaths = append(imagePaths, file.Filename)
+		imagePaths = append(imagePaths, filepath.Base(file.Filename))
 	}
 
 	updatedCheckup, err := cc.checkupService.AddImagesToCheckup(checkupUuid, imagePaths)
@@ -266,37 +260,4 @@ func (cc *CheckupController) addImages(c *gin.Context) {
 
 	var responseDto dto.CheckupDto
 	c.JSON(http.StatusOK, responseDto.FromModel(updatedCheckup))
-}
-
-// deleteImage godoc
-// @Summary		Delete an image from a checkup
-// @Description	Deletes a specific image by its UUID
-// @Tags			checkup
-// @Param			uuid		path	string	true	"Checkup UUID"
-// @Param			imageUuid	path	string	true	"Image UUID to delete"
-// @Success		204
-// @Failure		400
-// @Failure		404
-// @Failure		500
-// @Router			/checkup/{uuid}/images/{imageUuid} [delete]
-func (cc *CheckupController) deleteImage(c *gin.Context) {
-	checkupUuid := c.Param("uuid")
-	imageUuid := c.Param("imageUuid")
-
-	if checkupUuid == "" || imageUuid == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Checkup UUID and Image UUID are required"})
-		return
-	}
-
-	err := cc.checkupService.DeleteImage(imageUuid)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Image not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete image"})
-		return
-	}
-
-	c.Status(http.StatusNoContent)
 }
