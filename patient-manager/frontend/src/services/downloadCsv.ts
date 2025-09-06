@@ -1,11 +1,14 @@
 import { getAllPatients, getCheckupsForRecord, getIllnessesForRecord, getPrescriptionsForIllness } from './patientService';
 
 export async function downloadAllPatientsData(): Promise<void> {
+    console.log("Starting patient data download...");
     const patients = await getAllPatients();
 
     if (!patients || patients.length === 0) {
+        console.error("No patients found to download.");
         throw new Error('No patients found to download.');
     }
+    console.log(`Found ${patients.length} patients.`);
 
     const allData = [];
 
@@ -17,8 +20,10 @@ export async function downloadAllPatientsData(): Promise<void> {
     ];
 
     allData.push(headers);
+    console.log("CSV headers prepared:", headers);
 
     for (const patient of patients) {
+        console.log(`Processing data for patient: ${patient.firstName} ${patient.lastName} (OIB: ${patient.oib})`);
         const patientInfo = {
             "Record Type": "Patient",
             "Patient First Name": patient.firstName,
@@ -31,12 +36,15 @@ export async function downloadAllPatientsData(): Promise<void> {
         
         allData.push(Object.values(patientInfo));
 
-        const checkups = await getCheckupsForRecord(patient.medicalRecordUuid);
-        const illnesses = await getIllnessesForRecord(patient.medicalRecordUuid);
+        const checkups = await getCheckupsForRecord(patient.medicalRecordUuid) || [];
+        const illnesses = await getIllnessesForRecord(patient.medicalRecordUuid) || [];
         
+        console.log(`- Found ${checkups.length} checkups.`);
+        console.log(`- Found ${illnesses.length} illnesses.`);
+
         let allPrescriptions = [];
         for (const illness of illnesses) {
-            const prescriptions = await getPrescriptionsForIllness(illness.id);
+            const prescriptions = await getPrescriptionsForIllness(illness.id) || [];
             if (prescriptions) {
                 allPrescriptions.push(...prescriptions.map(p => ({
                     ...p,
@@ -44,6 +52,7 @@ export async function downloadAllPatientsData(): Promise<void> {
                 })));
             }
         }
+        console.log(`- Found ${allPrescriptions.length} total prescriptions.`);
 
         for (const checkup of checkups) {
             const checkupRow = {
@@ -94,7 +103,9 @@ export async function downloadAllPatientsData(): Promise<void> {
         }
     }
 
+    console.log("Finished processing all patient data. Total rows:", allData.length);
     const csvContent = allData.map(row => row.map(value => `"${value}"`).join(',')).join('\n');
+    console.log("CSV content generated. Creating blob...");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -102,6 +113,8 @@ export async function downloadAllPatientsData(): Promise<void> {
     link.setAttribute('download', 'all_patients_data.csv');
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
+    console.log("Triggering download...");
     link.click();
     document.body.removeChild(link);
+    console.log("Download complete.");
 }

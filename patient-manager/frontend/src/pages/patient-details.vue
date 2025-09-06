@@ -192,7 +192,7 @@ async function loadPatient(id: number) {
     isLoading.value = true;
     try {
         const data = await getPatientById(id);
-        patient.value = data; // Assign all data directly
+        patient.value = data;
         if (patient.value) {
             patientStore.viewPatient(patient.value);
         }
