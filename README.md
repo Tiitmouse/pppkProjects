@@ -14,3 +14,6 @@ A command-line application in Go for various data management tasks, including pa
 ## patient-manager
 
 The server-side component of a patient management system, this project is a Go-based web application that provides a RESTful API for handling patient data and integrates with a Vue.js frontend for a complete user experience.
+
+<br>
+FOR ADDITIONAL INFO OPEN DESIRED PROJECT
